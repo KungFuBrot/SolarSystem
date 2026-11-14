@@ -20,11 +20,22 @@
   const ctx = canvas.getContext('2d');
   let W = 0, H = 0, DPR = 1;
 
-  const SPEEDS = [0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 200]; // Erdtage pro Sekunde
+  // Erdtage pro Sekunde; Stufe 0 = Echtzeit
+  const SPEEDS = [1 / 86400, 1 / 24, 0.25, 0.5, 1, 2, 5, 10, 30, 100, 365.25];
+  const JD2000 = 2451545;
+  const JD_MIN = 2086308, JD_MAX = 2816788; // Jahr 1000 bis 3000
+  const nowJD = () => Date.now() / 86400000 + 2440587.5;
+  const jdToDate = jd => new Date((jd - 2440587.5) * 86400000);
+  const RAD = Math.PI / 180;
+  // Mittlere Länge des Mondes (mit der größten Korrektur) – damit stimmt auch die Mondphase
+  const moonLonReal = jd => {
+    const d = jd - JD2000;
+    return (218.316 + 13.176396 * d + 6.289 * Math.sin((134.963 + 13.064993 * d) * RAD)) * RAD;
+  };
   const state = {
     view: 'orbit',          // orbit | size | stars | galaxy
-    speedIdx: 1, paused: false,
-    days: 0, moonDays: 0, time: 0,
+    speedIdx: 3, dir: 1, paused: false,
+    jd: nowJD(), days: 0, moonDays: 0, moonAng: 0, time: 0,
     showOrbits: true, showNames: true,
     selected: null, follow: null, hover: null,
     tiltMode: false
@@ -123,16 +134,41 @@
     if (state.view === 'size') return b.sizePos;
     if (state.view !== 'orbit') return b.pos;
     if (b.fixed) return b.fixed;
-    if (b.ellipse) return cometPos(b.ellipse, state.days);
+    if (b.ellipse) return cometPos(b.ellipse);
     if (!b.orbit) return ORIGIN;
+    if (b.el) {
+      const a = helioLon(b);
+      return { x: Math.cos(a) * b.orbit, y: -Math.sin(a) * b.orbit, z: 0 };
+    }
     if (b.parentBody) {
       const p = posOf(b.parentBody);
       const per = Math.sign(b.period) * Math.max(Math.abs(b.period), 1.5);
-      const a = b.start + TAU * state.moonDays / per;
+      const a = b.id === 'mond' ? state.moonAng : b.start + TAU * state.moonDays / per;
       return { x: p.x + Math.cos(a) * b.orbit, y: p.y - Math.sin(a) * b.orbit, z: 0 };
     }
     const a = b.start + TAU * state.days / b.period;
     return { x: Math.cos(a) * b.orbit, y: -Math.sin(a) * b.orbit, z: 0 };
+  }
+  // Kepler-Gleichung lösen: aus der mittleren Anomalie M die wahre Anomalie berechnen
+  function keplerNu(M, e) {
+    let E = M;
+    for (let i = 0; i < 8; i++) E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+    return 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+  }
+  // Echte Richtung des Planeten von der Sonne aus (heliozentrische Länge) zum aktuellen Datum
+  function helioLon(b) {
+    if (b._jd === state.jd) return b._lon;
+    const o = b.el;
+    let lon;
+    if (o.peri != null) {
+      lon = keplerNu(wrapAngle(TAU * (state.jd - o.peri) / o.P), o.e) + o.w * RAD;
+    } else {
+      const T = (state.jd - JD2000) / 36525;
+      const L = (o.L + o.Ld * T) * RAD, w = (o.w + o.wd * T) * RAD;
+      lon = keplerNu(wrapAngle(L - w), o.e) + w;
+    }
+    b._jd = state.jd; b._lon = lon;
+    return lon;
   }
   // Komet auf einer langgezogenen Ellipse (Kepler-Gleichung), die Sonne sitzt im Brennpunkt
   function cometAt(o, E) {
@@ -141,8 +177,8 @@
     const cw = Math.cos(o.w), sw = Math.sin(o.w), ci = Math.cos(o.inc), si = Math.sin(o.inc);
     return { x: xp * cw - yp * ci * sw, y: -(xp * sw + yp * ci * cw), z: yp * si };
   }
-  function cometPos(o, days) {
-    const M = o.M0 - TAU * days / o.period;   // Halley läuft rückwärts um die Sonne
+  function cometPos(o) {
+    const M = -TAU * (state.jd - o.peri) / o.P;   // Halley läuft rückwärts um die Sonne
     let E = M;
     for (let i = 0; i < 8; i++) E -= (E - o.e * Math.sin(E) - M) / (1 - o.e * Math.cos(E));
     return cometAt(o, E);
@@ -1576,17 +1612,50 @@
     for (const btn of bar.children) btn.classList.toggle('active', !!state.selected && btn.dataset.id === state.selected.id);
   }
 
+  // ---------- Zeitsteuerung ----------
   function speedLabel() {
     const v = SPEEDS[state.speedIdx];
-    if (v < 1) return `1 Sekunde = ${v * 24} Stunden`;
-    return `1 Sekunde = ${v} ${v === 1 ? 'Tag' : 'Tage'}`;
+    let s;
+    if (state.speedIdx === 0) s = 'Echtzeit: 1 Sekunde = 1 Sekunde';
+    else if (v < 1) s = `1 Sekunde = ${fmt(v * 24)} ${v * 24 === 1 ? 'Stunde' : 'Stunden'}`;
+    else if (v >= 365) s = '1 Sekunde = 1 Jahr';
+    else s = `1 Sekunde = ${fmt(v)} ${v === 1 ? 'Tag' : 'Tage'}`;
+    if (state.paused) return '⏸️ angehalten – ' + s;
+    return (state.dir < 0 ? '⏪ rückwärts – ' : '▶️ ') + s;
   }
   const speed = $('speed');
-  speed.addEventListener('input', () => { state.speedIdx = +speed.value; $('speedText').textContent = speedLabel(); });
-  $('speedText').textContent = speedLabel();
   const playBtn = $('playBtn');
-  function togglePause() { state.paused = !state.paused; playBtn.textContent = state.paused ? '▶️' : '⏸️'; }
+  function syncTimeUi() {
+    speed.value = state.speedIdx;
+    $('speedText').textContent = speedLabel();
+    playBtn.textContent = state.paused ? '▶️' : '⏸️';
+    $('rewBtn').classList.toggle('active', !state.paused && state.dir < 0);
+    $('ffBtn').classList.toggle('active', !state.paused && state.dir > 0 && state.speedIdx > 3);
+    updateHud();
+  }
+  function setPaused(p) { state.paused = p; syncTimeUi(); }
+  function togglePause() { setPaused(!state.paused); }
+  speed.addEventListener('input', () => { state.speedIdx = +speed.value; syncTimeUi(); });
   playBtn.addEventListener('click', togglePause);
+  // Vorspulen: erst die Richtung umdrehen, dann bei jedem Druck schneller
+  $('ffBtn').addEventListener('click', () => {
+    if (state.paused || state.dir < 0) { state.paused = false; state.dir = 1; }
+    else state.speedIdx = Math.min(state.speedIdx + 1, SPEEDS.length - 1);
+    syncTimeUi();
+  });
+  $('rewBtn').addEventListener('click', () => {
+    if (state.paused || state.dir > 0) {
+      state.paused = false; state.dir = -1;
+      if (state.speedIdx < 3) state.speedIdx = 3;   // Echtzeit rückwärts wäre zu langsam
+    } else state.speedIdx = Math.min(state.speedIdx + 1, SPEEDS.length - 1);
+    syncTimeUi();
+  });
+  // Zurück zum jetzigen Zeitpunkt, in Echtzeit
+  $('nowBtn').addEventListener('click', () => {
+    Object.assign(state, { jd: nowJD(), speedIdx: 0, dir: 1, paused: false });
+    state.moonAng = moonLonReal(state.jd);
+    syncTimeUi();
+  });
   $('tOrbits').addEventListener('change', e => { state.showOrbits = e.target.checked; });
   $('tNames').addEventListener('change', e => { state.showNames = e.target.checked; });
   $('zoomIn').addEventListener('click', () => { const c = center(); zoomAt(c.x, c.y, 1.6); });
@@ -1733,15 +1802,35 @@
   Object.assign(cam, homeView());
 
   let last = performance.now(), hudTimer = 0;
-  const timeText = $('timeText');
-  function updateHud() {
-    const total = Math.floor(state.days);
-    const years = Math.floor(total / 365.25);
-    const days = Math.floor(total - years * 365.25);
-    const y = years === 1 ? '1 Jahr' : `${fmt(years)} Jahre`;
-    const d = days === 1 ? '1 Tag' : `${days} Tage`;
-    timeText.textContent = years > 0 ? `${y} und ${d}` : d;
+  const dateText = $('dateText'), relText = $('relText'), liveBadge = $('liveBadge');
+  function relative(diff) {
+    const a = Math.abs(diff);
+    if (a < 1 / 1440) return 'jetzt gerade';
+    const unit = (n, one, many) => `${fmt(n)} ${n === 1 ? one : many}`;
+    let s;
+    if (a < 1 / 24) s = unit(Math.round(a * 1440), 'Minute', 'Minuten');
+    else if (a < 1) s = unit(Math.round(a * 24), 'Stunde', 'Stunden');
+    else if (a < 60) s = unit(Math.round(a), 'Tag', 'Tagen');
+    else if (a < 730) s = unit(Math.round(a / 30.44), 'Monat', 'Monaten');
+    else s = unit(Math.round(a / 365.25), 'Jahr', 'Jahren');
+    return (diff > 0 ? 'in ' : 'vor ') + s;
   }
+  function updateHud() {
+    const d = jdToDate(state.jd);
+    const slow = SPEEDS[state.speedIdx] <= 1 / 24;
+    let t = d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+    if (slow) t += ', ' + d.toLocaleTimeString('de-DE', state.speedIdx === 0 ? {} : { hour: '2-digit', minute: '2-digit' }) + ' Uhr';
+    dateText.textContent = t;
+    const diff = state.jd - nowJD();
+    relText.textContent = relative(diff);
+    const live = state.speedIdx === 0 && state.dir > 0 && !state.paused && Math.abs(diff) < 2 / 1440;
+    liveBadge.classList.toggle('show', live);
+  }
+
+  // Start: Planeten stehen dort, wo sie heute wirklich sind
+  state.days = state.jd - JD2000;
+  state.moonAng = moonLonReal(state.jd);
+  syncTimeUi();
 
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -1751,11 +1840,17 @@
   }
   function step(dt) {
     state.time += dt;
-    if (!state.paused && state.view === 'orbit') {
-      const sp = SPEEDS[state.speedIdx];
-      state.days += sp * dt;
-      state.moonDays += Math.min(sp, 1) * dt;
+    if (!state.paused) {
+      const rate = SPEEDS[state.speedIdx] * state.dir;
+      state.jd = clamp(state.jd + rate * dt, JD_MIN, JD_MAX);
+      if (state.jd === JD_MIN || state.jd === JD_MAX) setPaused(true);
+      // Monde nie schneller als einen Tag pro Sekunde zeigen, sonst flimmern sie nur
+      const vis = Math.sign(rate) * Math.min(Math.abs(rate), 1);
+      state.moonDays += vis * dt;
+      if (Math.abs(rate) <= 1) state.moonAng = moonLonReal(state.jd);
+      else state.moonAng += TAU * vis * dt / 27.32;
     }
+    state.days = state.jd - JD2000;
 
     // Bildmitte weich verschieben, wenn die Info-Karte offen ist
     const open = document.body.classList.contains('info-open');

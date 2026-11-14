@@ -133,17 +133,33 @@ h1 {
   top: 92px;
   left: 16px;
   padding: 12px 16px;
-  width: 260px;
+  width: 300px;
 }
-.time { font-size: 20px; font-weight: 600; }
+.date { font-size: 17px; font-weight: 600; }
+.rel { color: var(--muted); font-size: 14px; margin-top: 2px; display: flex; align-items: center; gap: 8px; }
+.live {
+  display: none;
+  color: #fff;
+  background: #e8413c;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.live.show { display: inline-block; animation: livePulse 1.6s ease-in-out infinite; }
+@keyframes livePulse { 50% { opacity: 0.6; } }
+.tbtns { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.tbtns .round { width: 40px; height: 40px; font-size: 17px; flex: none; }
+.pill.now { background: var(--accent); color: #2a1a00; margin-left: auto; }
 .speed { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-.speed .round { width: 40px; height: 40px; font-size: 18px; flex: none; }
 .speed input { flex: 1; accent-color: var(--accent); min-width: 0; }
 .speed-text { color: var(--muted); font-size: 14px; margin-top: 4px; }
 .toggles { display: flex; gap: 14px; margin-top: 8px; font-size: 15px; }
 .toggles label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
 .toggles input { accent-color: var(--accent); width: 17px; height: 17px; }
-body:not([data-view="orbit"]) .time-panel .time,
+body:not([data-view="orbit"]) .time-panel .date,
+body:not([data-view="orbit"]) .time-panel .rel,
+body:not([data-view="orbit"]) .time-panel .tbtns,
 body:not([data-view="orbit"]) .time-panel .speed,
 body:not([data-view="orbit"]) .time-panel .speed-text,
 body:not([data-view="orbit"]) .toggles label:first-child { display: none; }
@@ -320,8 +336,13 @@ body.info-open .info { transform: none; }
   .modes { align-self: stretch; }
   .level-hint { bottom: auto; top: 128px; font-size: 14px; padding: 8px 14px; }
   .time-panel { top: auto; bottom: 74px; left: 16px; width: auto; right: 80px; padding: 8px 12px; }
-  .time { font-size: 16px; }
+  .date { font-size: 15px; }
+  .rel { font-size: 12px; }
+  .tbtns { margin-top: 6px; }
+  .tbtns .round { width: 36px; height: 36px; font-size: 15px; }
   .speed-text { display: none; }
+  .toggles { display: none; }
+  body:not([data-view="orbit"]) .time-panel { display: none; }
   .note { display: none; }
   .zoom-controls { top: auto; bottom: 74px; transform: none; }
   .round { width: 42px; height: 42px; }

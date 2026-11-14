@@ -17,7 +17,7 @@ window.BODIES = [
     compare: 'Die Sonne ist so riesig, dass über eine Million Erden in sie hineinpassen würden!'
   },
   {
-    id: 'merkur', name: 'Merkur', kind: 'Gesteinsplanet', color: '#9c9590',
+    id: 'merkur', name: 'Merkur', el: { L: 252.25032350, Ld: 149472.67411175, w: 77.45779628, wd: 0.16047689, e: 0.20563593 }, kind: 'Gesteinsplanet', color: '#9c9590',
     r: 4, orbit: 62, period: 88, start: 0.5, sizeR: 0.383,
     diameterKm: 4879, distanceKm: 57900000, distanceFrom: 'Sonne',
     year: '88 Erdtage', day: '176 Erdtage (von Sonnenaufgang bis Sonnenaufgang)',
@@ -29,7 +29,7 @@ window.BODIES = [
     compare: 'Merkur ist nur ein bisschen größer als unser Mond. Fast drei Merkure passen nebeneinander auf die Erde.'
   },
   {
-    id: 'venus', name: 'Venus', kind: 'Gesteinsplanet', color: '#e6bf78',
+    id: 'venus', name: 'Venus', el: { L: 181.97909950, Ld: 58517.81538729, w: 131.60246718, wd: 0.00268329, e: 0.00677672 }, kind: 'Gesteinsplanet', color: '#e6bf78',
     r: 7, orbit: 92, period: 225, start: 2.1, sizeR: 0.949,
     diameterKm: 12104, distanceKm: 108200000, distanceFrom: 'Sonne',
     year: '225 Erdtage', day: '117 Erdtage', temp: 'ca. 465 °C – heißer als ein Pizzaofen!', moons: 'keine',
@@ -40,7 +40,7 @@ window.BODIES = [
     compare: 'Venus ist fast genauso groß wie die Erde – wie eine Zwillingsschwester.'
   },
   {
-    id: 'erde', name: 'Erde', kind: 'Gesteinsplanet – unser Zuhause', color: '#2f6fd6',
+    id: 'erde', name: 'Erde', el: { L: 100.46457166, Ld: 35999.37244981, w: 102.93768193, wd: 0.32327364, e: 0.01671123 }, kind: 'Gesteinsplanet – unser Zuhause', color: '#2f6fd6',
     r: 7.5, orbit: 128, period: 365.25, start: 4.0, sizeR: 1,
     diameterKm: 12742, distanceKm: 149600000, distanceFrom: 'Sonne',
     year: '365 Tage', day: '24 Stunden', temp: 'im Durchschnitt ca. 15 °C', moons: '1 – unser Mond',
@@ -62,7 +62,7 @@ window.BODIES = [
     compare: 'Der Mond ist ungefähr ein Viertel so groß wie die Erde.'
   },
   {
-    id: 'mars', name: 'Mars', kind: 'Gesteinsplanet', color: '#cf5f38',
+    id: 'mars', name: 'Mars', el: { L: -4.55343205, Ld: 19140.30268499, w: -23.94362959, wd: 0.44441088, e: 0.09339410 }, kind: 'Gesteinsplanet', color: '#cf5f38',
     r: 5.5, orbit: 165, period: 687, start: 1.2, sizeR: 0.532,
     diameterKm: 6779, distanceKm: 227900000, distanceFrom: 'Sonne',
     year: '687 Erdtage (fast 2 Jahre)', day: '24 Stunden und 37 Minuten', temp: 'im Durchschnitt ca. −60 °C',
@@ -73,7 +73,7 @@ window.BODIES = [
     compare: 'Mars ist ungefähr halb so groß wie die Erde.'
   },
   {
-    id: 'jupiter', name: 'Jupiter', kind: 'Gasriese', gas: true, color: '#d8b48a',
+    id: 'jupiter', name: 'Jupiter', el: { L: 34.39644051, Ld: 3034.74612775, w: 14.72847983, wd: 0.21252668, e: 0.04838624 }, kind: 'Gasriese', gas: true, color: '#d8b48a',
     r: 18, orbit: 280, period: 4333, start: 3.3, sizeR: 11.21,
     diameterKm: 139820, distanceKm: 778500000, distanceFrom: 'Sonne',
     year: 'fast 12 Erdjahre', day: 'ca. 10 Stunden – der kürzeste Tag aller Planeten!',
@@ -85,7 +85,7 @@ window.BODIES = [
     compare: 'Jupiter ist so riesig, dass über 1.300 Erden in ihn hineinpassen würden!'
   },
   {
-    id: 'saturn', name: 'Saturn', kind: 'Gasriese', gas: true, color: '#e3c98f',
+    id: 'saturn', name: 'Saturn', el: { L: 49.95424423, Ld: 1222.49362201, w: 92.59887831, wd: -0.41897216, e: 0.05386179 }, kind: 'Gasriese', gas: true, color: '#e3c98f',
     r: 15, orbit: 370, period: 10759, start: 5.4, sizeR: 9.45, rings: true,
     diameterKm: 116460, distanceKm: 1434000000, distanceFrom: 'Sonne',
     year: 'ca. 29 Erdjahre', day: 'ca. 10 ½ Stunden', temp: 'ca. −140 °C', moons: 'über 270 – Rekord!',
@@ -96,7 +96,7 @@ window.BODIES = [
     compare: 'Saturn ist ungefähr neunmal so breit wie die Erde – und das ohne seine Ringe!'
   },
   {
-    id: 'uranus', name: 'Uranus', kind: 'Eisriese', gas: true, color: '#9ee0e6',
+    id: 'uranus', name: 'Uranus', el: { L: 313.23810451, Ld: 428.48202785, w: 170.95427630, wd: 0.40805281, e: 0.04725744 }, kind: 'Eisriese', gas: true, color: '#9ee0e6',
     r: 11, orbit: 455, period: 30687, start: 0.9, sizeR: 4.01,
     diameterKm: 50724, distanceKm: 2871000000, distanceFrom: 'Sonne',
     year: '84 Erdjahre', day: 'ca. 17 Stunden', temp: 'bis −224 °C – der kälteste Planet!', moons: 'fast 30',
@@ -107,7 +107,7 @@ window.BODIES = [
     compare: 'Uranus ist ungefähr viermal so breit wie die Erde.'
   },
   {
-    id: 'neptun', name: 'Neptun', kind: 'Eisriese', gas: true, color: '#3d6fe0',
+    id: 'neptun', name: 'Neptun', el: { L: -55.12002969, Ld: 218.45945325, w: 44.96476227, wd: -0.32241464, e: 0.00859048 }, kind: 'Eisriese', gas: true, color: '#3d6fe0',
     r: 10.5, orbit: 530, period: 60190, start: 2.6, sizeR: 3.88,
     diameterKm: 49244, distanceKm: 4495000000, distanceFrom: 'Sonne',
     year: '165 Erdjahre', day: 'ca. 16 Stunden', temp: 'ca. −214 °C', moons: '16',
@@ -144,7 +144,7 @@ window.BODIES = [
   // Zwergplaneten, Komet, Raumsonde
   window.BODIES.push(
     {
-      id: 'ceres', name: 'Ceres', kind: 'Zwergplanet im Asteroidengürtel', color: '#9a948c',
+      id: 'ceres', name: 'Ceres', el: { peri: 2459920.5, P: 1680, w: 153.9, e: 0.0785 }, kind: 'Zwergplanet im Asteroidengürtel', color: '#9a948c',
       r: 2.2, orbit: 214, period: 1682, start: 2.5, sizeR: 0.074,
       texture: 'craters', craterColor: 'rgba(255,255,255,0.55)', craters: [[0.15, -0.1, 0.12], [-0.35, 0.3, 0.15], [0.4, 0.35, 0.1]],
       diameterKm: 940, distanceKm: 414000000, distanceFrom: 'Sonne',
@@ -154,7 +154,7 @@ window.BODIES = [
       compare: 'Ceres ist so klein, dass über 13 Ceres-Kugeln nebeneinander auf die Erde passen.'
     },
     {
-      id: 'pluto', name: 'Pluto', kind: 'Zwergplanet', color: '#d9c2a5',
+      id: 'pluto', name: 'Pluto', el: { L: 238.92903833, Ld: 145.20780515, w: 224.06891629, wd: -0.04062942, e: 0.24882730 }, kind: 'Zwergplanet', color: '#d9c2a5',
       r: 3, orbit: 600, period: 90560, start: 4.4, sizeR: 0.187,
       texture: 'craters', craterColor: '#f6ead6', craters: [[0.18, 0.15, 0.34], [-0.4, -0.3, 0.12]],
       diameterKm: 2377, distanceKm: 5906000000, distanceFrom: 'Sonne',
@@ -166,7 +166,7 @@ window.BODIES = [
     {
       id: 'halley', name: 'Halleyscher Komet', kind: 'Komet', color: '#cfe8ff',
       r: 1, sizeR: 15 / 12742, inSize: false, comet: true, focus: 28,
-      ellipse: { a: 315, e: 0.778, w: 1.9, inc: 0.32, period: 27500, M0: 3.0 },
+      ellipse: { a: 315, e: 0.778, w: 5.36, inc: 0.32, peri: 2446470.5, P: 27510 },
       rows: [
         ['📏', 'Größe', 'ca. 15 km lang – ein dreckiger Schneeball'],
         ['📍', 'Entfernung zur Sonne', 'zwischen 88 Millionen und 5,3 Milliarden km'],
@@ -179,7 +179,7 @@ window.BODIES = [
     },
     {
       id: 'voyager', name: 'Voyager 1', kind: 'Raumsonde – am weitesten weg von allem, was Menschen gebaut haben', color: '#e8d9a8',
-      r: 1.5, fixed: { x: 470, y: -500, z: 170 }, probe: true, noLand: true, inSize: false,
+      r: 1.5, fixed: { x: -146, y: 546, z: 396 }, probe: true, noLand: true, inSize: false,
       rows: [
         ['🚀', 'Gestartet', '1977 – vor fast 50 Jahren'],
         ['📍', 'Entfernung zur Sonne', 'über 25 Milliarden km'],
