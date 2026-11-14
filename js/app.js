@@ -34,7 +34,7 @@
   };
   const state = {
     view: 'orbit',          // orbit | size | stars | galaxy
-    speedIdx: 3, dir: 1, paused: false,
+    speedIdx: 0, dir: 1, paused: false,   // Start: Echtzeit, wie nach „Jetzt“
     jd: nowJD(), days: 0, moonDays: 0, moonAng: 0, time: 0,
     showOrbits: true, showNames: true,
     selected: null, follow: null, hover: null,

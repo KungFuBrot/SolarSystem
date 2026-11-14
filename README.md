@@ -25,7 +25,7 @@ Online über den Link oben, oder lokal einfach `index.html` im Browser öffnen (
 - **Zoomen** mit Mausrad, zwei Fingern (Touch) oder den Knöpfen `+` / `−`
 - **Verschieben** durch Ziehen mit Maus oder Finger
 - **Echte Zeit**: Alle Planeten, der Mond (mit der richtigen Mondphase), Ceres, Pluto und der Halleysche Komet stehen dort, wo sie zum angezeigten Datum wirklich sind (Bahndaten nach NASA/JPL). Die Abstände bleiben vereinfacht, die Richtungen stimmen.
-- **Zeitsteuerung**: ⏪ zurückspulen, ⏸️ anhalten, ⏩ vorspulen (nochmal drücken = schneller), 🐢 … 🚀 Tempo von Echtzeit bis 1 Jahr pro Sekunde, **🕐 Jetzt** springt zum aktuellen Zeitpunkt und läuft in Echtzeit weiter. Am Anfang ist 1 Sekunde = 12 Stunden
+- **Zeitsteuerung**: ⏪ zurückspulen, ⏸️ anhalten, ⏩ vorspulen (nochmal drücken = schneller), 🐢 … 🚀 Tempo von Echtzeit bis 1 Jahr pro Sekunde, **🕐 Jetzt** springt zum aktuellen Zeitpunkt und läuft in Echtzeit weiter. Beim Start läuft die Zeit in Echtzeit (wie nach „Jetzt“)
 - **📏 Größen** → alle Planeten in echtem Größenverhältnis neben der riesigen Sonne
 
 Tastatur: `+` / `−` zoomen, Pfeiltasten kippen/drehen, `Leertaste` Pause, `Esc` oder `0` zurück zur Übersicht.
