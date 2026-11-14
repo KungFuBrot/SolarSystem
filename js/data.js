@@ -128,7 +128,9 @@ window.BODIES = [
     jupiter: ['des Jupiters', 'zum Jupiter', 'um den Jupiter'],
     saturn: ['des Saturns', 'zum Saturn', 'um den Saturn'],
     uranus: ['des Uranus', 'zum Uranus', 'um den Uranus'],
-    neptun: ['des Neptuns', 'zum Neptun', 'um den Neptun']
+    neptun: ['des Neptuns', 'zum Neptun', 'um den Neptun'],
+    pluto: ['des Pluto', 'zum Pluto', 'um den Pluto'],
+    erde: ['der Erde', 'zur Erde', 'um die Erde']
   };
   const moon = m => {
     const [gen, to, around] = PLANET[m.parent];
@@ -139,7 +141,76 @@ window.BODIES = [
       sizeR: m.diameterKm / 12742, bar: false, inSize: false, car: false, start: Math.random() * 6.28
     }, m);
   };
+  // Zwergplaneten, Komet, Raumsonde
   window.BODIES.push(
+    {
+      id: 'ceres', name: 'Ceres', kind: 'Zwergplanet im Asteroidengürtel', color: '#9a948c',
+      r: 2.2, orbit: 214, period: 1682, start: 2.5, sizeR: 0.074,
+      texture: 'craters', craterColor: 'rgba(255,255,255,0.55)', craters: [[0.15, -0.1, 0.12], [-0.35, 0.3, 0.15], [0.4, 0.35, 0.1]],
+      diameterKm: 940, distanceKm: 414000000, distanceFrom: 'Sonne',
+      year: 'ca. 4 ½ Erdjahre', day: 'ca. 9 Stunden', temp: 'ca. −105 °C', moons: 'keine',
+      intro: 'Ceres ist der größte Brocken im Asteroidengürtel – so groß, dass sie rund geworden ist. Darum zählt sie zu den Zwergplaneten.',
+      fun: 'Auf Ceres gibt es helle, weiße Flecken in einem Krater. Das ist Salz, das aus ihrem Inneren nach oben gekommen ist!',
+      compare: 'Ceres ist so klein, dass über 13 Ceres-Kugeln nebeneinander auf die Erde passen.'
+    },
+    {
+      id: 'pluto', name: 'Pluto', kind: 'Zwergplanet', color: '#d9c2a5',
+      r: 3, orbit: 600, period: 90560, start: 4.4, sizeR: 0.187,
+      texture: 'craters', craterColor: '#f6ead6', craters: [[0.18, 0.15, 0.34], [-0.4, -0.3, 0.12]],
+      diameterKm: 2377, distanceKm: 5906000000, distanceFrom: 'Sonne',
+      year: '248 Erdjahre', day: 'ca. 6 Tage und 9 Stunden', temp: 'ca. −230 °C', moons: '5 – der größte heißt Charon',
+      intro: 'Pluto war früher der neunte Planet. Seit 2006 nennt man ihn „Zwergplaneten“, weil es weit draußen noch viele ähnliche Eiswelten gibt.',
+      fun: 'Auf Pluto gibt es eine riesige helle Fläche in Form eines Herzens! Die Raumsonde New Horizons hat sie 2015 fotografiert.',
+      compare: 'Pluto ist kleiner als unser Mond – nur etwa ein Fünftel so breit wie die Erde.'
+    },
+    {
+      id: 'halley', name: 'Halleyscher Komet', kind: 'Komet', color: '#cfe8ff',
+      r: 1, sizeR: 15 / 12742, inSize: false, comet: true, focus: 28,
+      ellipse: { a: 315, e: 0.778, w: 1.9, inc: 0.32, period: 27500, M0: 3.0 },
+      rows: [
+        ['📏', 'Größe', 'ca. 15 km lang – ein dreckiger Schneeball'],
+        ['📍', 'Entfernung zur Sonne', 'zwischen 88 Millionen und 5,3 Milliarden km'],
+        ['🔄', 'Eine Runde um die Sonne', 'ca. 76 Jahre'],
+        ['🔭', 'Von der Erde aus zu sehen', 'zuletzt 1986 – das nächste Mal 2061']
+      ],
+      intro: 'Der Halleysche Komet ist ein Brocken aus Eis, Staub und Gestein – wie ein schmutziger Schneeball. Kommt er der Sonne nahe, bekommt er einen langen, leuchtenden Schweif.',
+      fun: 'Der Schweif eines Kometen zeigt immer von der Sonne weg – egal, in welche Richtung der Komet gerade fliegt!',
+      compare: 'Halley ist nur etwa 15 Kilometer groß – winzig im Vergleich zur Erde.'
+    },
+    {
+      id: 'voyager', name: 'Voyager 1', kind: 'Raumsonde – am weitesten weg von allem, was Menschen gebaut haben', color: '#e8d9a8',
+      r: 1.5, fixed: { x: 470, y: -500, z: 170 }, probe: true, noLand: true, inSize: false,
+      rows: [
+        ['🚀', 'Gestartet', '1977 – vor fast 50 Jahren'],
+        ['📍', 'Entfernung zur Sonne', 'über 25 Milliarden km'],
+        ['📡', 'Ihre Funksignale brauchen', 'fast einen ganzen Tag bis zur Erde'],
+        ['🌍', 'Besucht', 'Jupiter und Saturn']
+      ],
+      intro: 'Voyager 1 ist eine Raumsonde, die 1977 von der Erde gestartet ist. Sie hat Jupiter und Saturn besucht und fliegt seitdem immer weiter hinaus – heute ist sie schon zwischen den Sternen.',
+      fun: 'An Bord ist eine goldene Schallplatte mit Bildern, Musik und Grüßen in vielen Sprachen – falls Außerirdische sie jemals finden!'
+    }
+  );
+
+  window.BODIES.push(
+    moon({
+      id: 'iss', name: 'ISS', parent: 'erde', kind: 'Internationale Raumstation', color: '#d7dbe6',
+      r: 0.45, orbit: 11, period: 0.064, station: true, bar: true, texture: null,
+      rows: [
+        ['📏', 'Größe', 'ca. 109 m breit – so groß wie ein Fußballfeld'],
+        ['📍', 'Höhe über der Erde', 'ca. 400 km'],
+        ['🔄', 'Eine Runde um die Erde', 'ca. 90 Minuten'],
+        ['👩‍🚀', 'An Bord', 'meistens 7 Astronautinnen und Astronauten']
+      ],
+      intro: 'Die Internationale Raumstation ISS ist ein großes Haus im Weltall. Dort leben und forschen Astronautinnen und Astronauten aus vielen Ländern.',
+      fun: 'Die ISS fliegt so schnell um die Erde, dass die Menschen an Bord jeden Tag etwa 16 Sonnenaufgänge sehen!'
+    }),
+    moon({
+      id: 'charon', name: 'Charon', parent: 'pluto', color: '#a9a29a', r: 1.4, orbit: 7, period: 6.39,
+      diameterKm: 1212, distanceKm: 19591, year: 'ca. 6 ½ Tage',
+      intro: 'Charon ist der größte Mond von Pluto – er ist fast halb so groß wie Pluto selbst.',
+      fun: 'Pluto und Charon zeigen sich immer dieselbe Seite. Von einer Seite des Pluto sieht man Charon immer am Himmel – von der anderen Seite nie!',
+      compare: 'Charon ist ungefähr ein Drittel so groß wie unser Mond.'
+    }),
     moon({
       id: 'phobos', name: 'Phobos', parent: 'mars', color: '#8b7d6b', r: 0.6, orbit: 8.5, period: 0.319,
       diameterKm: 22, distanceKm: 9376, year: '7 Stunden und 39 Minuten',

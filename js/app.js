@@ -23,7 +23,7 @@
   const SPEEDS = [0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 200]; // Erdtage pro Sekunde
   const state = {
     view: 'orbit',          // orbit | size | stars | galaxy
-    speedIdx: 5, paused: false,
+    speedIdx: 1, paused: false,
     days: 0, moonDays: 0, time: 0,
     showOrbits: true, showNames: true,
     selected: null, follow: null, hover: null,
@@ -53,7 +53,7 @@
     const sun = byId.sonne;
     sun.sizePos = { x: 0, y: 0, z: 0 };
     let x = sun.sizeR * SIZE_UNIT;
-    for (const id of ['merkur', 'venus', 'erde', 'mond', 'mars', 'jupiter', 'saturn', 'uranus', 'neptun']) {
+    for (const id of ['merkur', 'venus', 'erde', 'mond', 'mars', 'ceres', 'jupiter', 'saturn', 'uranus', 'neptun', 'pluto']) {
       const b = byId[id];
       const R = b.sizeR * SIZE_UNIT;
       const ext = b.rings ? R * 2.3 : R;
@@ -70,8 +70,13 @@
   const gauss = () => (rnd() + rnd() + rnd() - 1.5) / 1.5;
   const belt = Array.from({ length: 650 }, () => {
     const a = 196 + rnd() * 36 + (rnd() - 0.5) * 6;
-    return { a, ang: rnd() * TAU, period: 1200 + (a - 196) * 28, s: 0.5 + rnd() * 0.9, l: 120 + rnd() * 80 | 0 };
+    return { a, ang: rnd() * TAU, period: 1200 + (a - 196) * 28, s: 0.5 + rnd() * 0.9, l: 120 + rnd() * 80 | 0, z: 0 };
   });
+  const kuiper = Array.from({ length: 700 }, () => {
+    const a = 565 + rnd() * 95;
+    return { a, ang: rnd() * TAU, period: 90000 + (a - 565) * 400, s: 0.4 + rnd() * 0.8, l: 150 + rnd() * 70 | 0, z: gauss() * 12, ice: true };
+  });
+  const beltAll = belt.concat(kuiper);
 
   // Spiralarme: bei r = 265 (Sonne) liegen die Arme bei 45°, 135°, …
   const ARM_K = 3.08;
@@ -117,6 +122,8 @@
   function posOf(b) {
     if (state.view === 'size') return b.sizePos;
     if (state.view !== 'orbit') return b.pos;
+    if (b.fixed) return b.fixed;
+    if (b.ellipse) return cometPos(b.ellipse, state.days);
     if (!b.orbit) return ORIGIN;
     if (b.parentBody) {
       const p = posOf(b.parentBody);
@@ -126,6 +133,19 @@
     }
     const a = b.start + TAU * state.days / b.period;
     return { x: Math.cos(a) * b.orbit, y: -Math.sin(a) * b.orbit, z: 0 };
+  }
+  // Komet auf einer langgezogenen Ellipse (Kepler-Gleichung), die Sonne sitzt im Brennpunkt
+  function cometAt(o, E) {
+    const bb = o.a * Math.sqrt(1 - o.e * o.e);
+    const xp = o.a * (Math.cos(E) - o.e), yp = bb * Math.sin(E);
+    const cw = Math.cos(o.w), sw = Math.sin(o.w), ci = Math.cos(o.inc), si = Math.sin(o.inc);
+    return { x: xp * cw - yp * ci * sw, y: -(xp * sw + yp * ci * cw), z: yp * si };
+  }
+  function cometPos(o, days) {
+    const M = o.M0 - TAU * days / o.period;   // Halley läuft rückwärts um die Sonne
+    let E = M;
+    for (let i = 0; i < 8; i++) E -= (E - o.e * Math.sin(E) - M) / (1 - o.e * Math.cos(E));
+    return cometAt(o, E);
   }
   const center = () => ({ x: W / 2 + off.x, y: H / 2 + off.y });
 
@@ -156,7 +176,7 @@
   function viewCfg(v = state.view) {
     const m = Math.max(Math.min(W, H), 50);
     const inner = pad => Math.max(m / 2 - pad, m * 0.3);
-    if (v === 'orbit') { const home = inner(70) / 545; return { home, min: home * 0.6, max: 220 }; }
+    if (v === 'orbit') { const home = inner(70) / 640; return { home, min: home * 0.6, max: 220 }; }
     if (v === 'size') {
       const left = byId.sonne.sizeR * SIZE_UNIT * 0.86;
       const w = Math.max(W, 50);
@@ -179,7 +199,8 @@
       case 'orbit': {
         const R = b.r * k;
         if (b.id === 'sonne') return Math.max(R, 11);
-        if (b.parentBody) return Math.max(R, 2);
+        if (b.parentBody) return Math.max(R, b.station ? 4 : 2);
+        if (b.comet || b.probe) return Math.max(R, 4);
         return Math.max(R, b.r >= 15 ? 7 : b.r >= 10 ? 6 : 4.5);
       }
       case 'stars': return b.dot * clamp(Math.sqrt(k / viewCfg('stars').home), 0.85, 2);
@@ -222,6 +243,7 @@
     if (state.view === 'stars') return m * 0.5 / (2.5 * LJ);
     if (state.view === 'galaxy') return m * 0.3 / (b.focus || 40);
     if (state.view === 'orbit' && b.id === 'sonne') return m * 0.12 / b.r;
+    if (b.focus && state.view === 'orbit') return m * 0.3 / b.focus;
     const R = state.view === 'size' ? b.sizeR * SIZE_UNIT : b.r;
     return m * 0.17 / (R * (b.rings ? 1.9 : 1));
   }
@@ -326,6 +348,129 @@
     c.beginPath(); c.ellipse(x, y, Math.max(rx, 0.1), Math.max(ry, 0.1), r0, 0, TAU); c.fill();
   }
 
+  // ---------- Erde als Globus ----------
+  const D2R = Math.PI / 180;
+  const EARTH = (() => {
+    const densify = poly => {
+      const out = [];
+      for (let i = 0; i < poly.length; i++) {
+        const p = poly[i], q = poly[(i + 1) % poly.length];
+        const k = Math.max(1, Math.ceil(Math.max(Math.abs(q[0] - p[0]), Math.abs(q[1] - p[1])) / 3));
+        for (let j = 0; j < k; j++) out.push([p[0] + (q[0] - p[0]) * j / k, p[1] + (q[1] - p[1]) * j / k]);
+      }
+      return out;
+    };
+    const E = window.EARTH, d = {};
+    for (const key of ['land', 'forest', 'desert', 'mountain', 'ice']) d[key] = E[key].map(densify);
+    return Object.assign({}, E, d);
+  })();
+  const EARTH_TILT = 20 * D2R;
+  const earthLon = () => 15 - state.time * 6; // dreht sich langsam (von West nach Ost)
+  function earthProj(lon0) {
+    const sl0 = Math.sin(EARTH_TILT), cl0 = Math.cos(EARTH_TILT), L0 = lon0 * D2R;
+    return (lon, lat) => {
+      const la = lat * D2R, dl = lon * D2R - L0, cl = Math.cos(la);
+      return {
+        x: cl * Math.sin(dl),
+        y: cl0 * Math.sin(la) - sl0 * cl * Math.cos(dl),
+        v: sl0 * Math.sin(la) + cl0 * cl * Math.cos(dl)   // > 0: auf der Vorderseite
+      };
+    };
+  }
+  function drawEarth(c, x, y, R, lon0) {
+    const g = c.createRadialGradient(x - R * 0.3, y - R * 0.3, R * 0.1, x, y, R);
+    g.addColorStop(0, '#3f8fe0');
+    g.addColorStop(1, '#0f3a86');
+    c.fillStyle = g;
+    c.fillRect(x - R, y - R, 2 * R, 2 * R);
+    const P = earthProj(lon0);
+    const fill = (polys, col) => {
+      c.fillStyle = col;
+      for (const poly of polys) {
+        const pr = poly.map(([lo, la]) => P(lo, la));
+        if (!pr.some(p => p.v > 0)) continue;
+        c.beginPath();
+        pr.forEach((p, i) => {
+          let px = p.x, py = p.y;
+          if (p.v < 0) { const n = Math.hypot(px, py) || 1; px /= n; py /= n; } // hinter dem Rand: auf den Rand legen
+          if (i) c.lineTo(x + px * R, y - py * R); else c.moveTo(x + px * R, y - py * R);
+        });
+        c.closePath();
+        c.fill();
+      }
+    };
+    fill(EARTH.land, '#5c9a45');
+    fill(EARTH.forest, '#3b7a35');
+    fill(EARTH.desert, '#d9c28c');
+    fill(EARTH.mountain, '#9b8a66');
+    fill(EARTH.ice, '#f4f8fc');
+    // Wolken ziehen etwas schneller als die Erde sich dreht
+    const drift = (c === ctx ? state.time : 0) * 2;
+    for (const [lo, la, w, h] of EARTH.clouds) {
+      const p = P(lo + drift, la);
+      if (p.v < 0.15) continue;
+      c.fillStyle = 'rgba(255,255,255,0.42)';
+      c.beginPath();
+      c.ellipse(x + p.x * R, y - p.y * R, w * R * (0.4 + 0.6 * p.v), h * R, 0, 0, TAU);
+      c.fill();
+    }
+  }
+  // Beschriftungen auf dem Globus (nur in der Nahaufnahme)
+  function drawEarthLabels(x, y, R, lon0) {
+    if (R < 55) return;
+    const P = earthProj(lon0);
+    const fs = clamp(R / 9, 10, 15);
+    const pt = (lo, la) => { const p = P(lo, la); return { x: x + p.x * R, y: y - p.y * R, v: p.v }; };
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const text = (t, px, py, font, col) => {
+      ctx.font = font;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+      ctx.strokeText(t, px, py);
+      ctx.fillStyle = col;
+      ctx.fillText(t, px, py);
+    };
+    // Äquator
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(255,230,120,0.6)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    let on = false;
+    for (let lo = -180; lo <= 180; lo += 4) {
+      const p = pt(lo, 0);
+      if (p.v > 0) { if (on) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y); on = true; } else on = false;
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    const eq = pt(lon0 - 25, 0);
+    if (eq.v > 0.3 && R >= 90) text('Äquator', eq.x, eq.y - fs * 0.8, '500 ' + (fs - 2) + 'px Fredoka, sans-serif', '#ffe48a');
+
+    for (const [n, lo, la] of EARTH.continents) {
+      const p = pt(lo, la);
+      if (p.v > 0.3) text(n, p.x, p.y, '700 ' + fs + 'px Fredoka, sans-serif', '#ffffff');
+    }
+    if (R >= 90) {
+      for (const [n, lo, la] of EARTH.oceans) {
+        const p = pt(lo, la);
+        if (p.v > 0.35) text(n, p.x, p.y, 'italic 500 ' + (fs - 1) + 'px Fredoka, sans-serif', '#bfe0ff');
+      }
+    }
+    for (const pl of EARTH.places) {
+      if (!pl.home && R < 90) continue;
+      const p = pt(pl.lon, pl.lat);
+      if (p.v < 0.2) continue;
+      if (!pl.region) {
+        ctx.fillStyle = pl.home ? '#ffd84a' : '#ff6b5a';
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(p.x, p.y, pl.home ? 4.5 : 3.2, 0, TAU); ctx.fill(); ctx.stroke();
+      }
+      text(pl.name, p.x, p.y + (pl.region ? 0 : fs * 0.95), '600 ' + (fs - 2) + 'px Fredoka, sans-serif', pl.home ? '#ffd84a' : '#ffe9e0');
+    }
+    ctx.textBaseline = 'alphabetic';
+  }
+
   const RINGS = [[1.22, 1.45, 'rgba(200,180,140,0.5)'], [1.5, 1.92, 'rgba(232,212,170,0.85)'], [1.98, 2.25, 'rgba(200,178,138,0.6)']];
   function drawRings(c, x, y, R, part, flat) {
     c.save();
@@ -345,7 +490,7 @@
     c.restore();
   }
 
-  function drawPlanet(c, b, x, y, R, la, ringFlat) {
+  function drawPlanet(c, b, x, y, R, la, ringFlat, spin = 15) {
     if (b.rings) drawRings(c, x, y, R, 'back', ringFlat);
     c.save();
     c.beginPath(); c.arc(x, y, R, 0, TAU); c.clip();
@@ -357,15 +502,7 @@
         for (const [p, h, col] of b.bands) { c.fillStyle = col; c.fillRect(x - R, y + p * R, 2 * R, h * R); }
         if (b.spot) ellipse(c, x + R * 0.28, y + R * 0.36, R * 0.22, R * 0.12, 0, b.spot);
       } else if (b.texture === 'earth') {
-        const land = '#3d9a4a';
-        ellipse(c, x - R * 0.35, y - R * 0.18, R * 0.32, R * 0.22, 0.5, land);
-        ellipse(c, x - R * 0.18, y + R * 0.3, R * 0.16, R * 0.3, 0.3, land);
-        ellipse(c, x + R * 0.35, y - R * 0.2, R * 0.28, R * 0.18, -0.3, land);
-        ellipse(c, x + R * 0.4, y + R * 0.3, R * 0.15, R * 0.24, 0.2, '#6aa84f');
-        ellipse(c, x, y - R * 0.98, R * 0.6, R * 0.2, 0, '#f4f8ff');
-        ellipse(c, x, y + R * 0.98, R * 0.6, R * 0.2, 0, '#f4f8ff');
-        ellipse(c, x + R * 0.05, y + R * 0.02, R * 0.5, R * 0.06, 0.25, 'rgba(255,255,255,0.55)');
-        ellipse(c, x - R * 0.1, y - R * 0.5, R * 0.35, R * 0.05, -0.2, 'rgba(255,255,255,0.5)');
+        drawEarth(c, x, y, R, spin);
       } else if (b.texture === 'mars') {
         ellipse(c, x - R * 0.25, y + R * 0.1, R * 0.35, R * 0.18, 0.3, '#9c4426');
         ellipse(c, x + R * 0.35, y - R * 0.25, R * 0.2, R * 0.12, -0.4, '#a84a2a');
@@ -419,13 +556,33 @@
         break;
       }
       case 'core': drawStarPoint(c, s.x, s.y, 5, '#fff1c9', t); break;
+      case 'blackhole': {
+        const r = Math.max(R, 6);
+        c.save();
+        c.translate(s.x, s.y);
+        c.rotate(-0.4);
+        c.scale(1, 0.4);
+        const g = c.createRadialGradient(0, 0, r * 0.6, 0, 0, r * 2.4);
+        g.addColorStop(0, 'rgba(255,230,160,0.95)');
+        g.addColorStop(0.4, hexA(b.color, 0.6));
+        g.addColorStop(1, hexA(b.color, 0));
+        c.fillStyle = g;
+        c.beginPath(); c.arc(0, 0, r * 2.4, 0, TAU); c.fill();
+        c.restore();
+        c.fillStyle = '#000';
+        c.beginPath(); c.arc(s.x, s.y, r * 0.75, 0, TAU); c.fill();
+        c.strokeStyle = 'rgba(255,220,150,0.8)';
+        c.lineWidth = 1.2;
+        c.stroke();
+        break;
+      }
       case 'star': drawStarPoint(c, s.x, s.y, R, b.color, t); break;
       case 'nebula': {
         const r = Math.max(R, 6) * 2.2;
         const g = c.createRadialGradient(s.x, s.y, 0, s.x, s.y, r);
-        g.addColorStop(0, 'rgba(255,220,240,0.9)');
-        g.addColorStop(0.3, 'rgba(255,120,200,0.5)');
-        g.addColorStop(1, 'rgba(120,60,200,0)');
+        g.addColorStop(0, 'rgba(255,240,245,0.9)');
+        g.addColorStop(0.3, hexA(b.color, 0.55));
+        g.addColorStop(1, hexA(b.color, 0));
         c.fillStyle = g;
         c.beginPath(); c.arc(s.x, s.y, r, 0, TAU); c.fill();
         break;
@@ -476,6 +633,65 @@
     }
   }
 
+  // ---------- Komet, Raumstation, Raumsonde ----------
+  function drawComet(c, b, s, R, sunS) {
+    const p = posOf(b);
+    const dist = Math.hypot(p.x, p.y, p.z) || 1;
+    let ux = s.x - sunS.x, uy = s.y - sunS.y;
+    const n = Math.hypot(ux, uy) || 1; ux /= n; uy /= n;
+    // Je näher an der Sonne, desto länger der Schweif
+    const L = Math.max(clamp(5200 / dist, 4, 70) * Z(), 10);
+    const w = Math.max(R * 1.1, 3);
+    const g = c.createLinearGradient(s.x, s.y, s.x + ux * L, s.y + uy * L);
+    g.addColorStop(0, 'rgba(200,230,255,0.75)');
+    g.addColorStop(1, 'rgba(200,230,255,0)');
+    c.fillStyle = g;
+    c.beginPath();
+    c.moveTo(s.x - uy * w, s.y + ux * w);
+    c.lineTo(s.x + ux * L - uy * w * 2.2, s.y + uy * L + ux * w * 2.2);
+    c.lineTo(s.x + ux * L + uy * w * 2.2, s.y + uy * L - ux * w * 2.2);
+    c.lineTo(s.x + uy * w, s.y - ux * w);
+    c.fill();
+    const glow = c.createRadialGradient(s.x, s.y, 0, s.x, s.y, w * 2.4);
+    glow.addColorStop(0, 'rgba(235,245,255,0.95)');
+    glow.addColorStop(1, 'rgba(180,220,255,0)');
+    c.fillStyle = glow;
+    c.beginPath(); c.arc(s.x, s.y, w * 2.4, 0, TAU); c.fill();
+    c.fillStyle = '#8a8580';
+    c.beginPath(); c.arc(s.x, s.y, Math.max(R * 0.5, 1.5), 0, TAU); c.fill();
+  }
+  function drawStation(c, x, y, R) {
+    const s = Math.max(R, 4);
+    c.save();
+    c.translate(x, y);
+    c.rotate(-0.3);
+    c.fillStyle = '#2f5fb8';
+    c.strokeStyle = '#9fb8e8';
+    c.lineWidth = 0.6;
+    for (const dx of [-1.55, -1.0, 0.55, 1.1]) { c.fillRect(dx * s, -0.55 * s, 0.45 * s, 1.1 * s); c.strokeRect(dx * s, -0.55 * s, 0.45 * s, 1.1 * s); }
+    c.fillStyle = '#cfd4de';
+    c.fillRect(-1.6 * s, -0.06 * s, 3.2 * s, 0.12 * s);
+    c.fillStyle = '#eef1f6';
+    c.fillRect(-0.35 * s, -0.3 * s, 0.7 * s, 0.6 * s);
+    c.restore();
+  }
+  function drawProbe(c, x, y, R) {
+    const s = Math.max(R, 4);
+    c.save();
+    c.translate(x, y);
+    c.strokeStyle = '#c9cfdc';
+    c.lineWidth = Math.max(1, s * 0.12);
+    c.beginPath(); c.moveTo(0, 0); c.lineTo(s * 2.2, s * 1.2); c.moveTo(0, 0); c.lineTo(-s * 1.8, s * 0.9); c.stroke();
+    c.fillStyle = '#d9b45a';
+    c.fillRect(-s * 0.35, -s * 0.1, s * 0.7, s * 0.5);
+    c.fillStyle = '#f2f4f8';
+    c.beginPath(); c.ellipse(0, -s * 0.35, s * 1.1, s * 0.45, 0, 0, TAU); c.fill();
+    c.strokeStyle = '#9aa3b5';
+    c.lineWidth = 1;
+    c.stroke();
+    c.restore();
+  }
+
   // ---------- Zeichnen: Hintergrund & Ebenen ----------
 
   function orbitEllipse(cx, cy, r) {
@@ -490,7 +706,7 @@
       if (!b.orbit) continue;
       const sel = state.selected === b || state.hover === b;
       if (b.parentBody) {
-        if (!isVisible(b)) continue;
+        if (!isVisible(b) || b.station) continue;
         const p = w2sp(posOf(b.parentBody), P);
         ctx.strokeStyle = sel ? 'rgba(230,230,240,0.75)' : 'rgba(200,200,225,0.22)';
         ctx.lineWidth = 1;
@@ -501,15 +717,27 @@
       ctx.lineWidth = sel ? 2 : 1;
       orbitEllipse(sun.x, sun.y, b.orbit); ctx.stroke();
     }
+    const h = byId.halley;
+    const selH = state.selected === h || state.hover === h;
+    ctx.strokeStyle = selH ? 'rgba(207,232,255,0.8)' : 'rgba(180,210,255,0.18)';
+    ctx.lineWidth = selH ? 2 : 1;
+    ctx.setLineDash([5, 6]);
+    ctx.beginPath();
+    for (let i = 0; i <= 96; i++) {
+      const s = w2sp(cometAt(h.ellipse, i / 96 * TAU), P);
+      if (i) ctx.lineTo(s.x, s.y); else ctx.moveTo(s.x, s.y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
   }
 
   function drawBelt(P) {
     const sz = clamp(Z() * 0.7, 0.8, 1.8);
-    for (const a of belt) {
+    for (const a of beltAll) {
       const ang = a.ang + TAU * state.days / a.period;
-      const s = w2s(Math.cos(ang) * a.a, -Math.sin(ang) * a.a, 0, P);
+      const s = w2s(Math.cos(ang) * a.a, -Math.sin(ang) * a.a, a.z, P);
       if (s.x < -5 || s.y < -5 || s.x > W + 5 || s.y > H + 5) continue;
-      ctx.fillStyle = `rgb(${a.l},${a.l - 10},${a.l - 25})`;
+      ctx.fillStyle = a.ice ? `rgba(${a.l},${a.l + 20},255,0.55)` : `rgb(${a.l},${a.l - 10},${a.l - 25})`;
       const q = sz * a.s;
       if (q < 1.5) ctx.fillRect(s.x - q / 2, s.y - q / 2, q, q);
       else { ctx.beginPath(); ctx.arc(s.x, s.y, q / 2, 0, TAU); ctx.fill(); }
@@ -528,6 +756,17 @@
       if (state.showNames && r * LJ * k > 40) {
         ctx.fillStyle = 'rgba(170,185,240,0.7)';
         ctx.fillText(`${r} Lichtjahre`, c0.x, c0.y - r * LJ * k * Math.abs(P.cp) - 5);
+      }
+    }
+    // Oortsche Wolke: eine riesige Hülle aus Kometen rund um unser Sonnensystem
+    if (1.5 * LJ * k > 25) {
+      ctx.setLineDash([2, 5]);
+      ctx.strokeStyle = 'rgba(190,220,255,0.45)';
+      orbitEllipse(c0.x, c0.y, 1.5 * LJ); ctx.stroke();
+      ctx.setLineDash([]);
+      if (state.showNames && 1.5 * LJ * k > 60) {
+        ctx.fillStyle = 'rgba(200,225,255,0.8)';
+        ctx.fillText('Oortsche Wolke – hier wohnen die Kometen', c0.x, c0.y + 1.5 * LJ * k * Math.abs(P.cp) + 15);
       }
     }
     // Stiele: zeigen, wie weit ein Stern über oder unter unserer Ebene liegt
@@ -713,8 +952,14 @@
       if (v === 'stars') drawStarPoint(ctx, s.x, s.y, R, b.color, state.time);
       else if (v === 'galaxy') drawGalaxyObject(ctx, b, s, R);
       else if (b.id === 'sonne') drawSun(ctx, s.x, s.y, R, state.time, v === 'orbit' ? 3.2 : 1.12);
+      else if (b.comet) drawComet(ctx, b, s, R, sunS);
+      else if (b.station) drawStation(ctx, s.x, s.y, R);
+      else if (b.probe) drawProbe(ctx, s.x, s.y, R);
       else if (R < 1.6) { ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(s.x, s.y, 1.6, 0, TAU); ctx.fill(); }
-      else drawPlanet(ctx, b, s.x, s.y, R, v === 'orbit' ? Math.atan2(sunS.y - s.y, sunS.x - s.x) : Math.PI, ringFlat);
+      else {
+        drawPlanet(ctx, b, s.x, s.y, R, v === 'orbit' ? Math.atan2(sunS.y - s.y, sunS.x - s.x) : Math.PI, ringFlat, earthLon());
+        if (b.id === 'erde' && state.showNames) drawEarthLabels(s.x, s.y, R, earthLon());
+      }
 
       if (state.selected === b) {
         const pr = (b.rings ? R * 2.35 : Math.max(R, 6)) + 7 + Math.sin(state.time * 4) * 2;
@@ -743,6 +988,8 @@
       ctx.textAlign = 'center';
       const s = w2s(0, -238, 0, P);
       ctx.fillText('Asteroidengürtel', s.x, s.y);
+      const k2 = w2s(0, -672, 0, P);
+      ctx.fillText('Kuipergürtel (Eiswelten)', k2.x, k2.y);
     }
     if (labels.length) drawLabels(labels);
     if (!trans) drawArrows(P);
@@ -793,7 +1040,7 @@
   const AT_TARGET = ['park', 'approach', 'descend', 'landed', 'hover'];
   const atTarget = () => AT_TARGET.includes(rocket.mode);
   // Landen geht auf Planeten und Monden – Sonne und Sterne werden umkreist
-  const canLand = b => (state.view === 'orbit' || state.view === 'size') && b.id !== 'sonne';
+  const canLand = b => (state.view === 'orbit' || state.view === 'size') && b.id !== 'sonne' && !b.noLand;
   function launchStart(b) {
     if (rocket.mode === 'fly') return rocketWorld(ease(clamp((rocket.t - IGNITION) / rocket.dur, 0, 1)));
     if (atTarget() && rocket.target) return { ...posOf(rocket.target) };
@@ -1077,6 +1324,7 @@
     return `ca. ${fmt(y / 1e6)} Millionen Jahre`;
   }
   function factRows(b) {
+    if (b.rows) return b.rows;
     if (b.lj != null) {
       return [
         ['📍', 'Entfernung von der Sonne', `${fmt(b.lj, b.lj < 20 ? 1 : 0)} Lichtjahre`],
@@ -1111,10 +1359,13 @@
     if (b.id === 'sonne') { drawSun(c, S / 2, S / 2, 30, 0, 1.75); return; }
     if (b.lj != null && (b.render === 'star' || !b.render)) { drawStarPoint(c, S / 2, S / 2, 13, b.color, 0); return; }
     if (b.render) {
-      const R = b.render === 'galaxy' ? 52 : b.render === 'blob' ? 34 : b.render === 'cluster' ? 22 : 12;
+      const R = b.render === 'galaxy' ? 52 : b.render === 'blob' ? 34 : b.render === 'cluster' ? 22 : b.render === 'blackhole' ? 16 : 12;
       drawGalaxyObject(c, b, { x: S / 2, y: S / 2 }, R);
       return;
     }
+    if (b.comet) { drawComet(c, b, { x: S * 0.35, y: S * 0.65 }, 5, { x: 0, y: S }); return; }
+    if (b.station) { drawStation(c, S / 2, S / 2, 22); return; }
+    if (b.probe) { drawProbe(c, S / 2, S / 2 - 8, 16); return; }
     drawPlanet(c, b, S / 2, S / 2, b.rings ? 21 : 40, -2.4, 0.4);
   }
 

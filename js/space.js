@@ -72,6 +72,34 @@ window.STARS = [
     compare: 'Altair ist fast doppelt so groß wie die Sonne.'
   },
   {
+    id: 'luhman16', name: 'Luhman 16', kind: 'Zwei Braune Zwerge', color: '#c0623a',
+    dir: [-0.6, -0.45, -0.66], lj: 6.5, dot: 2.6, sizeSun: 0.09,
+    intro: 'Luhman 16 sind zwei „Braune Zwerge“, die umeinander kreisen. Braune Zwerge sind zu klein, um richtige Sterne zu sein – aber viel zu groß für Planeten.',
+    fun: 'In ihrer Lufthülle gibt es wahrscheinlich Wolken aus winzigen Tröpfchen aus Eisen und Gestein!',
+    compare: 'Ein Brauner Zwerg ist nur etwa so groß wie Jupiter – viel kleiner als unsere Sonne.'
+  },
+  {
+    id: 'ross128', name: 'Ross 128', kind: 'Roter Zwerg mit Planet', color: '#ff6a4a',
+    dir: [0.95, 0.1, 0.3], lj: 11, dot: 2.8, sizeSun: 0.2,
+    intro: 'Ross 128 ist ein ruhiger, kleiner roter Stern.',
+    fun: 'Um Ross 128 kreist ein Planet, der etwas größer ist als die Erde – und dort ist es vielleicht weder zu heiß noch zu kalt.',
+    compare: 'Ross 128 ist etwa ein Fünftel so groß wie unsere Sonne.'
+  },
+  {
+    id: 'teegarden', name: 'Teegardens Stern', kind: 'Roter Zwerg mit Planeten', color: '#ff5d3c',
+    dir: [0.55, 0.75, 0.35], lj: 12.5, dot: 2.6, sizeSun: 0.11,
+    intro: 'Teegardens Stern ist ein sehr kleiner, kühler roter Stern. Er wurde erst 2003 entdeckt.',
+    fun: 'Um Teegardens Stern kreisen Planeten, die ungefähr so groß sind wie die Erde. Sie gehören zu den erdähnlichsten Planeten, die man kennt!',
+    compare: 'Er ist nur etwa ein Zehntel so groß wie unsere Sonne.'
+  },
+  {
+    id: 'fomalhaut', name: 'Fomalhaut', kind: 'Heller Stern mit Staubring', color: '#e9f1ff',
+    dir: [0.7, 0.2, -0.68], lj: 25, dot: 5.8, sizeSun: 1.84,
+    intro: 'Fomalhaut ist ein heller, weißer Stern, den man im Herbst tief im Süden sehen kann.',
+    fun: 'Um Fomalhaut liegt ein riesiger Ring aus Staub und Eis – so ähnlich wie ein gewaltiger Kometengürtel.',
+    compare: 'Fomalhaut ist fast doppelt so groß wie unsere Sonne.'
+  },
+  {
     id: 'wega', name: 'Wega', kind: 'Bläulich-weißer Stern', color: '#cfe0ff',
     dir: [0.12, -0.78, 0.62], lj: 25, dot: 6.5, sizeSun: 2.4,
     intro: 'Wega ist einer der hellsten Sterne am Sommerhimmel. Sie leuchtet bläulich-weiß und gehört auch zum „Sommerdreieck“.',
@@ -113,6 +141,43 @@ window.GALAXY = [
     fun: 'Im Winter kannst du den Orionnebel sogar ohne Fernrohr sehen: als kleinen, verschwommenen Fleck im „Schwert“ des Sternbilds Orion.'
   },
   {
+    id: 'polarstern', name: 'Polarstern', kind: 'Der Nordstern', color: '#fff6d6',
+    pos: { x: 3.6, y: 267.3, z: 1.5 }, near: true, render: 'star', dot: 5, lj: 433, focus: 6, sizeSun: 46,
+    intro: 'Der Polarstern steht fast genau über dem Nordpol der Erde. Darum scheint er sich am Himmel nie zu bewegen – alle anderen Sterne drehen sich um ihn herum.',
+    fun: 'Seeleute haben früher mit dem Polarstern den Weg nach Norden gefunden – wie mit einem Kompass am Himmel!',
+    compare: 'Der Polarstern ist etwa 46-mal so breit wie unsere Sonne.'
+  },
+  {
+    id: 'helix', name: 'Helixnebel', kind: 'Das „Auge“ im All', color: '#6fd3ff',
+    pos: { x: 3.8, y: 259.7, z: -5 }, near: true, render: 'nebula', wr: 0.3, lj: 650, focus: 6,
+    intro: 'Der Helixnebel ist eine leuchtende Gaswolke, die ein Stern am Ende seines Lebens abgestoßen hat. Er sieht aus wie ein riesiges Auge.',
+    fun: 'So ähnlich wird es auch einmal unserer Sonne ergehen – aber erst in vielen Milliarden Jahren!'
+  },
+  {
+    id: 'krebsnebel', name: 'Krebsnebel', kind: 'Überrest einer Sternexplosion', color: '#ff9a5a',
+    pos: { x: -6, y: 330, z: -2 }, render: 'nebula', wr: 0.4, lj: 6500, focus: 25,
+    intro: 'Der Krebsnebel ist das, was von einer gewaltigen Sternexplosion übrig geblieben ist – einer Supernova.',
+    fun: 'Diese Explosion haben Menschen im Jahr 1054 gesehen! Sie war so hell, dass man sie wochenlang sogar am Tag sehen konnte.'
+  },
+  {
+    id: 'cygx1', name: 'Cygnus X-1', kind: 'Schwarzes Loch', color: '#ff9a3a',
+    pos: { x: 68, y: 242, z: 3 }, render: 'blackhole', dot: 6, lj: 7200, focus: 25,
+    intro: 'Cygnus X-1 war das erste Schwarze Loch, das Forscher entdeckt haben. Es zieht Gas von einem großen Nachbarstern zu sich herüber.',
+    fun: 'Ein Schwarzes Loch selbst kann man nicht sehen – aber das Gas, das hineinstrudelt, wird so heiß, dass es hell leuchtet.'
+  },
+  {
+    id: 'etacar', name: 'Eta Carinae', kind: 'Riesiges Doppelstern-System', color: '#ffe0c0',
+    pos: { x: -71, y: 242, z: -1 }, render: 'star', dot: 6, lj: 7500, focus: 25,
+    intro: 'Eta Carinae ist eines der hellsten und schwersten Sternsysteme in unserer Milchstraße – millionenfach heller als die Sonne.',
+    fun: 'Vor etwa 180 Jahren hatte Eta Carinae einen riesigen Ausbruch und war plötzlich einer der hellsten Sterne am Himmel.'
+  },
+  {
+    id: 'omegacen', name: 'Omega Centauri', kind: 'Riesiger Kugelsternhaufen', color: '#ffe9c0',
+    pos: { x: -132, y: 158, z: 15 }, render: 'cluster', wr: 1.5, lj: 17000, focus: 30,
+    intro: 'Omega Centauri ist eine riesige Kugel aus etwa 10 Millionen Sternen, die ganz eng zusammenstehen.',
+    fun: 'Würdest du auf einem Planeten in Omega Centauri wohnen, wäre der Nachthimmel so voller heller Sterne, dass es nie richtig dunkel würde.'
+  },
+  {
     id: 'lmc', name: 'Große Magellansche Wolke', kind: 'Kleine Nachbar-Galaxie', color: '#cfd8ff',
     pos: { x: -700, y: 900, z: -1100 }, render: 'blob', wr: 70, lj: 160000, focus: 140,
     extra: [['📏', 'Durchmesser', 'ca. 14.000 Lichtjahre']],
@@ -125,6 +190,13 @@ window.GALAXY = [
     extra: [['📏', 'Durchmesser', 'ca. 7.000 Lichtjahre']],
     intro: 'Die Kleine Magellansche Wolke ist die kleine Schwester der Großen Magellanschen Wolke – auch sie ist eine Zwerggalaxie.',
     fun: 'Die beiden Wolken sind nach dem Seefahrer Ferdinand Magellan benannt, dessen Mannschaft sie auf ihrer Reise um die ganze Welt beschrieben hat.'
+  },
+  {
+    id: 'dreieck', name: 'Dreiecksgalaxie', kind: 'Kleine Spiralgalaxie', color: '#d6e2ff',
+    pos: { x: -11500, y: 19500, z: -11000 }, render: 'galaxy', wr: 300, lj: 2700000, focus: 450,
+    extra: [['📏', 'Durchmesser', 'ca. 60.000 Lichtjahre']],
+    intro: 'Die Dreiecksgalaxie ist nach Andromeda und unserer Milchstraße die drittgrößte Galaxie in unserer Nachbarschaft.',
+    fun: 'Bei sehr dunklem Himmel kann man sie ohne Fernrohr sehen – sie ist eines der am weitesten entfernten Dinge, die man mit bloßem Auge erkennen kann.'
   },
   {
     id: 'andromeda', name: 'Andromeda-Galaxie', kind: 'Unsere große Nachbar-Galaxie', color: '#e6dcff',
