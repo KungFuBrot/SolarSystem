@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Unser Sonnensystem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="space" aria-label="Interaktive Karte des Sonnensystems"></canvas>
+
+  <header class="topbar">
+    <div class="title">
+      <span class="logo" aria-hidden="true">🪐</span>
+      <div>
+        <h1>Unser Sonnensystem</h1>
+        <p class="sub" id="modeSub">Klick auf einen Planeten – deine Rakete fliegt hin! 🚀</p>
+      </div>
+    </div>
+    <div class="modes" role="tablist">
+      <button data-mode="orbit" class="active">🪐 Sonnensystem</button>
+      <button data-mode="size">📏 Echte Größen</button>
+    </div>
+  </header>
+
+  <section class="card time-panel" id="timePanel">
+    <div class="time"><span aria-hidden="true">⏱️</span> <span id="timeText">0 Tage</span></div>
+    <div class="speed">
+      <button id="playBtn" class="round" title="Anhalten / Weiter">⏸️</button>
+      <span aria-hidden="true">🐢</span>
+      <input type="range" id="speed" min="0" max="9" step="1" value="5" aria-label="Geschwindigkeit">
+      <span aria-hidden="true">🚀</span>
+    </div>
+    <div class="speed-text" id="speedText"></div>
+    <div class="toggles">
+      <label><input type="checkbox" id="tOrbits" checked> Umlaufbahnen</label>
+      <label><input type="checkbox" id="tNames" checked> Namen</label>
+    </div>
+  </section>
+
+  <div class="zoom-controls">
+    <button id="zoomIn" class="round" title="Hineinzoomen">+</button>
+    <button id="zoomOut" class="round" title="Herauszoomen">−</button>
+    <button id="homeBtn" class="round" title="Ganzes Sonnensystem zeigen">🔭</button>
+  </div>
+
+  <p class="note" id="note"></p>
+
+  <nav class="planet-bar" id="planetBar" aria-label="Planeten"></nav>
+
+  <aside id="info" class="info" aria-hidden="true">
+    <button class="close round" id="closeInfo" title="Schließen">✕</button>
+    <div class="info-head">
+      <canvas id="infoPic" width="110" height="110"></canvas>
+      <div>
+        <span class="kind" id="infoKind"></span>
+        <h2 id="infoName"></h2>
+        <button id="speakBtn" class="pill">🔊 Vorlesen</button>
+      </div>
+    </div>
+    <p class="intro" id="infoIntro"></p>
+    <p class="tip" id="infoTip"></p>
+    <div class="facts" id="infoFacts"></div>
+    <div class="fun">
+      <strong>⭐ Wusstest du?</strong>
+      <p id="infoFun"></p>
+    </div>
+    <div class="compare">
+      <strong>📐 So groß im Vergleich zur Erde</strong>
+      <canvas id="cmp"></canvas>
+      <p id="infoCompare"></p>
+    </div>
+    <button id="backBtn" class="pill big back">🔭 Zum ganzen Sonnensystem</button>
+  </aside>
+
+  <div id="hint" class="hint card">
+    <p>👆 <b>Klick</b> oder <b>tippe</b> auf einen Planeten: Deine 🚀 <b>Rakete</b> fliegt hin und bringt dir spannende Infos!</p>
+    <p>🔍 <b>Zoomen:</b> Mausrad, zwei Finger oder die Knöpfe <b>+</b> und <b>−</b></p>
+    <p>✋ <b>Verschieben:</b> mit gedrückter Maustaste oder einem Finger ziehen</p>
+    <button id="hintBtn" class="pill big">Los geht's! 🚀</button>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
