@@ -1,8 +1,8 @@
-# Unser Sonnensystem 🪐
+# SolarSystem – Unser Sonnensystem 🪐
 
 Eine interaktive Website, mit der Kinder das Sonnensystem entdecken können.
 
-**[Im Browser öffnen](https://kungfubrot.github.io/Sonnensystem/)**
+**[Im Browser öffnen](https://kungfubrot.github.io/SolarSystem/)**
 
 ## Starten
 
