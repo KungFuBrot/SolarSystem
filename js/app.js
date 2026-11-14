@@ -790,7 +790,7 @@
       z: a * a * (S.z || 0) + 2 * a * u * C.z + u * u * (T.z || 0)
     };
   }
-  const AT_TARGET = ['park', 'approach', 'descend', 'landed'];
+  const AT_TARGET = ['park', 'approach', 'descend', 'landed', 'hover'];
   const atTarget = () => AT_TARGET.includes(rocket.mode);
   // Landen geht auf Planeten und Monden – Sonne und Sterne werden umkreist
   const canLand = b => (state.view === 'orbit' || state.view === 'size') && b.id !== 'sonne';
@@ -849,13 +849,15 @@
     rocket.ang += wrapAngle(target - rocket.ang) * (1 - Math.exp(-dt * speed));
   }
 
-  // Landeanflug: über den Planeten schwenken, Nase hoch, abbremsen, aufsetzen
+  // Landeanflug: über den Planeten schwenken, Nase hoch, abbremsen, aufsetzen.
+  // Gas- und Eisriesen haben keinen festen Boden – dort schwebt die Rakete über den Wolken.
   const APPROACH = 1.0, DESCEND = 1.5;
   function landingStep(dt, P) {
     const b = rocket.target;
     const c = w2sp(posOf(b), P);
     const R = Math.max(screenR(b), 3);
-    const surf = R + 15, hover = R + 65;
+    const gas = !!b.gas;
+    const surf = R + (gas ? 26 : 15), hover = R + 65;
     const UP = -Math.PI / 2;
     rocket.phaseT += dt;
     if (rocket.mode === 'approach') {
@@ -879,14 +881,22 @@
       turnTo(UP, dt, 12);
       rocket.x = c.x + Math.sin(state.time * 9) * (1 - t) * 1.5;
       rocket.y = c.y - r;
-      rocket.flame = lerp(0.95, 0.35, t);
+      rocket.flame = lerp(0.95, gas ? 0.5 : 0.35, t);
       puff(dt, 0.05, true);
       if (t >= 1) {
-        rocket.mode = 'landed';
-        rocket.flame = 0;
-        dust(c.x, c.y - R);
+        rocket.mode = gas ? 'hover' : 'landed';
+        rocket.phaseT = 0;
+        if (gas) rocket.flame = 0.5; else { rocket.flame = 0; dust(c.x, c.y - R); }
         if (state.selected === b) openInfo(b);
       }
+    } else if (rocket.mode === 'hover') {
+      // Sanft auf und ab schweben, die Flamme bleibt an
+      const bob = Math.sin(rocket.phaseT * 2.2) * 3;
+      rocket.x = c.x + Math.sin(rocket.phaseT * 1.3) * 1.5;
+      rocket.y = c.y - surf + bob;
+      turnTo(UP + Math.sin(rocket.phaseT * 1.7) * 0.06, dt, 6);
+      rocket.flame = 0.45 + Math.cos(rocket.phaseT * 2.2) * 0.12;
+      puff(dt, 0.1, false);
     } else {
       rocket.x = c.x; rocket.y = c.y - surf;
       rocket.ang = UP;
@@ -949,7 +959,7 @@
           if (state.selected === b) openInfo(b);
         }
       }
-    } else if (rocket.mode === 'approach' || rocket.mode === 'descend' || rocket.mode === 'landed') {
+    } else if (['approach', 'descend', 'landed', 'hover'].includes(rocket.mode)) {
       landingStep(dt, P);
     } else if (rocket.mode === 'park') {
       const b = rocket.target;
@@ -1014,7 +1024,7 @@
       ctx.beginPath(); ctx.moveTo(-L * 0.42, -2.8); ctx.lineTo(-L * 0.42 - fl * 0.6, 0); ctx.lineTo(-L * 0.42, 2.8); ctx.fill();
     }
     // Landebeine
-    if (rocket.mode === 'landed' || (rocket.mode === 'descend' && rocket.phaseT > 0.5)) {
+    if (rocket.mode === 'landed' || (rocket.mode === 'descend' && rocket.phaseT > 0.5 && !rocket.target.gas)) {
       ctx.strokeStyle = '#b9bfd6';
       ctx.lineWidth = 1.6;
       ctx.beginPath();

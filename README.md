@@ -11,7 +11,7 @@ Online über den Link oben, oder lokal einfach `index.html` im Browser öffnen (
 ## Was man machen kann
 
 - **Ganzes Sonnensystem ansehen** und von dort aus jeden Planeten und Mond anklicken
-- **Anklicken** → eine kleine 🚀 Rakete zündet, beschleunigt langsam und fliegt im Bogen hin; die Kamera begleitet sie. Auf Planeten und Monden macht sie einen Landeanflug und landet, die Sonne und andere Sterne umkreist sie. Danach erscheint die Info-Karte mit kindgerechten Fakten, „Wusstest du?“ und einem Größenvergleich
+- **Anklicken** → eine kleine 🚀 Rakete zündet, beschleunigt langsam und fliegt im Bogen hin; die Kamera begleitet sie. Auf Gesteinsplaneten und Monden macht sie einen Landeanflug und landet, über den Gas- und Eisriesen (ohne festen Boden) schwebt sie in den Wolken, die Sonne und andere Sterne umkreist sie. Danach erscheint die Info-Karte mit kindgerechten Fakten, „Wusstest du?“ und einem Größenvergleich
 - **Monde**: neben unserem Mond auch Phobos, Deimos, Io, Europa, Ganymed, Kallisto, Mimas, Enceladus, Titan, Miranda, Titania, Oberon und Triton (sichtbar in der Nahaufnahme, nachdem man ihren Planeten angeklickt hat)
 - **🔄 Kippen und Drehen**: Knopf drücken und ziehen (oder rechte Maustaste / Pfeiltasten) – das Sonnensystem lässt sich in alle Richtungen kippen
 - **Weit hinauszoomen** in drei Stufen, mit fließendem Übergang:

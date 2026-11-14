@@ -73,7 +73,7 @@ window.BODIES = [
     compare: 'Mars ist ungefähr halb so groß wie die Erde.'
   },
   {
-    id: 'jupiter', name: 'Jupiter', kind: 'Gasriese', color: '#d8b48a',
+    id: 'jupiter', name: 'Jupiter', kind: 'Gasriese', gas: true, color: '#d8b48a',
     r: 18, orbit: 280, period: 4333, start: 3.3, sizeR: 11.21,
     diameterKm: 139820, distanceKm: 778500000, distanceFrom: 'Sonne',
     year: 'fast 12 Erdjahre', day: 'ca. 10 Stunden – der kürzeste Tag aller Planeten!',
@@ -85,7 +85,7 @@ window.BODIES = [
     compare: 'Jupiter ist so riesig, dass über 1.300 Erden in ihn hineinpassen würden!'
   },
   {
-    id: 'saturn', name: 'Saturn', kind: 'Gasriese', color: '#e3c98f',
+    id: 'saturn', name: 'Saturn', kind: 'Gasriese', gas: true, color: '#e3c98f',
     r: 15, orbit: 370, period: 10759, start: 5.4, sizeR: 9.45, rings: true,
     diameterKm: 116460, distanceKm: 1434000000, distanceFrom: 'Sonne',
     year: 'ca. 29 Erdjahre', day: 'ca. 10 ½ Stunden', temp: 'ca. −140 °C', moons: 'über 270 – Rekord!',
@@ -96,7 +96,7 @@ window.BODIES = [
     compare: 'Saturn ist ungefähr neunmal so breit wie die Erde – und das ohne seine Ringe!'
   },
   {
-    id: 'uranus', name: 'Uranus', kind: 'Eisriese', color: '#9ee0e6',
+    id: 'uranus', name: 'Uranus', kind: 'Eisriese', gas: true, color: '#9ee0e6',
     r: 11, orbit: 455, period: 30687, start: 0.9, sizeR: 4.01,
     diameterKm: 50724, distanceKm: 2871000000, distanceFrom: 'Sonne',
     year: '84 Erdjahre', day: 'ca. 17 Stunden', temp: 'bis −224 °C – der kälteste Planet!', moons: 'fast 30',
@@ -107,7 +107,7 @@ window.BODIES = [
     compare: 'Uranus ist ungefähr viermal so breit wie die Erde.'
   },
   {
-    id: 'neptun', name: 'Neptun', kind: 'Eisriese', color: '#3d6fe0',
+    id: 'neptun', name: 'Neptun', kind: 'Eisriese', gas: true, color: '#3d6fe0',
     r: 10.5, orbit: 530, period: 60190, start: 2.6, sizeR: 3.88,
     diameterKm: 49244, distanceKm: 4495000000, distanceFrom: 'Sonne',
     year: '165 Erdjahre', day: 'ca. 16 Stunden', temp: 'ca. −214 °C', moons: '16',
