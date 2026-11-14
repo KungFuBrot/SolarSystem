@@ -72,10 +72,6 @@
     const a = 196 + rnd() * 36 + (rnd() - 0.5) * 6;
     return { a, ang: rnd() * TAU, period: 1200 + (a - 196) * 28, s: 0.5 + rnd() * 0.9, l: 120 + rnd() * 80 | 0 };
   });
-  const bgStars = Array.from({ length: 420 }, () => ({
-    x: rnd(), y: rnd(), d: 0.2 + rnd() * 0.8, s: rnd() < 0.08 ? 1.6 : 0.5 + rnd() * 0.8,
-    ph: rnd() * TAU, hue: rnd() < 0.15 ? (rnd() < 0.5 ? '200,220,255' : '255,230,200') : '255,255,255'
-  }));
 
   // Spiralarme: bei r = 265 (Sonne) liegen die Arme bei 45°, 135°, …
   const ARM_K = 3.08;
@@ -158,14 +154,16 @@
 
   // ---------- Größen, Sichtbarkeit ----------
   function viewCfg(v = state.view) {
-    const m = Math.min(W, H);
-    if (v === 'orbit') { const home = (m / 2 - 70) / 545; return { home, min: home * 0.6, max: 220 }; }
+    const m = Math.max(Math.min(W, H), 50);
+    const inner = pad => Math.max(m / 2 - pad, m * 0.3);
+    if (v === 'orbit') { const home = inner(70) / 545; return { home, min: home * 0.6, max: 220 }; }
     if (v === 'size') {
       const left = byId.sonne.sizeR * SIZE_UNIT * 0.86;
-      return { home: W / ((SIZE_END - left) * 1.04), min: W / (SIZE_END + 400), max: 60, hx: (left + SIZE_END) / 2 };
+      const w = Math.max(W, 50);
+      return { home: w / ((SIZE_END - left) * 1.04), min: w / (SIZE_END + 400), max: 60, hx: (left + SIZE_END) / 2 };
     }
-    if (v === 'stars') { const home = (m / 2 - 60) / (20 * LJ); return { home, min: home * 0.55, max: m / 2 / (1.2 * LJ) }; }
-    const home = (m / 2 - 50) / 560;
+    if (v === 'stars') { const home = inner(60) / (20 * LJ); return { home, min: home * 0.55, max: m / 2 / (1.2 * LJ) }; }
+    const home = inner(50) / 560;
     return { home, min: m / 2 / 27000, max: m / 2 / 12 };
   }
   function homeView() {
@@ -193,8 +191,13 @@
   }
   // Monde nur zeigen, wenn sie nicht im Planeten verschwinden
   function moonOrbitPx(b) { return b.orbit * Z(); }
+  function moonActive(b) {
+    const s = state.selected;
+    return !!s && (s === b || s === b.parentBody || s.parentBody === b.parentBody);
+  }
   function isVisible(b) {
     if (state.view === 'orbit' && b.parentBody) {
+      if (!moonActive(b)) return false;
       const o = moonOrbitPx(b);
       return o > screenR(b.parentBody) + 4 && o > 8;
     }
@@ -238,8 +241,9 @@
   function flyHome() {
     state.follow = null;
     const h = homeView();
+    const atHome = !flight && Math.abs(cam.z / h.z - 1) < 0.04 && Math.hypot(cam.x - h.x, cam.y - h.y) * cam.z < 4;
     startFlight({
-      target: () => h, tz: h.z, dur: 1.2, rotate: true,
+      target: () => h, tz: h.z, dur: 1.2, rotate: atHome,
       tyaw: rot.yaw - wrapAngle(rot.yaw), tpitch: 0
     });
   }
@@ -473,21 +477,11 @@
   }
 
   // ---------- Zeichnen: Hintergrund & Ebenen ----------
-  function drawBgStars() {
-    const t = state.time;
-    for (const s of bgStars) {
-      const px = ((s.x * W - cam.x * 0.03 * s.d - rot.yaw * 60 * s.d) % W + W) % W;
-      const py = ((s.y * H - cam.y * 0.03 * s.d + rot.pitch * 60 * s.d) % H + H) % H;
-      const a = 0.45 + 0.4 * Math.sin(t * 1.3 + s.ph) * s.d;
-      ctx.fillStyle = `rgba(${s.hue},${a})`;
-      ctx.fillRect(px, py, s.s, s.s);
-    }
-  }
 
   function orbitEllipse(cx, cy, r) {
     const k = Z();
     const ry = tilted() ? r * k * Math.abs(Math.cos(rot.pitch)) : r * k;
-    ctx.beginPath(); ctx.ellipse(cx, cy, r * k, Math.max(ry, 0.3), 0, 0, TAU);
+    ctx.beginPath(); ctx.ellipse(cx, cy, Math.max(r * k, 0.3), Math.max(ry, 0.3), 0, 0, TAU);
   }
 
   function drawOrbits(P) {
@@ -510,14 +504,15 @@
   }
 
   function drawBelt(P) {
-    const sz = Math.max(0.8, Z() * 0.7);
+    const sz = clamp(Z() * 0.7, 0.8, 1.8);
     for (const a of belt) {
       const ang = a.ang + TAU * state.days / a.period;
       const s = w2s(Math.cos(ang) * a.a, -Math.sin(ang) * a.a, 0, P);
       if (s.x < -5 || s.y < -5 || s.x > W + 5 || s.y > H + 5) continue;
       ctx.fillStyle = `rgb(${a.l},${a.l - 10},${a.l - 25})`;
       const q = sz * a.s;
-      ctx.fillRect(s.x - q / 2, s.y - q / 2, q, q);
+      if (q < 1.5) ctx.fillRect(s.x - q / 2, s.y - q / 2, q, q);
+      else { ctx.beginPath(); ctx.arc(s.x, s.y, q / 2, 0, TAU); ctx.fill(); }
     }
   }
 
@@ -690,12 +685,9 @@
 
   // ---------- Hauptbild ----------
   function draw() {
-    const bg = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.8);
-    bg.addColorStop(0, '#0b0d22');
-    bg.addColorStop(1, '#03040b');
-    ctx.fillStyle = bg;
+    // Hintergrund: einfach schwarz – Sterne gibt es nur dort, wo wirklich welche sind
+    ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, W, H);
-    drawBgStars();
 
     const v = state.view;
     const P = proj();
@@ -798,9 +790,13 @@
       z: a * a * (S.z || 0) + 2 * a * u * C.z + u * u * (T.z || 0)
     };
   }
+  const AT_TARGET = ['park', 'approach', 'descend', 'landed'];
+  const atTarget = () => AT_TARGET.includes(rocket.mode);
+  // Landen geht auf Planeten und Monden – Sonne und Sterne werden umkreist
+  const canLand = b => (state.view === 'orbit' || state.view === 'size') && b.id !== 'sonne';
   function launchStart(b) {
     if (rocket.mode === 'fly') return rocketWorld(ease(clamp((rocket.t - IGNITION) / rocket.dur, 0, 1)));
-    if (rocket.mode === 'park' && rocket.target) return { ...posOf(rocket.target) };
+    if (atTarget() && rocket.target) return { ...posOf(rocket.target) };
     if (state.view === 'stars') return ORIGIN;
     if (state.view === 'galaxy') return { ...byId.du.pos };
     // Im Sonnensystem startet die Rakete auf der Erde (oder auf dem Mond, wenn sie zur Erde soll)
@@ -809,7 +805,7 @@
 
   function launchRocket(b) {
     const S = launchStart(b);
-    const fresh = rocket.mode !== 'fly' && rocket.mode !== 'park';
+    const fresh = rocket.mode !== 'fly' && !atTarget();
     Object.assign(rocket, { mode: 'fly', target: b, t: 0, S, alpha: 1, side: Math.random() < 0.5 ? 1 : -1, flame: 0 });
     const P = proj();
     const sS = w2sp(S, P), sT = w2sp(posOf(b), P);
@@ -822,6 +818,8 @@
       rocket.ang = Math.atan2(n.y - sS.y, n.x - sS.x) || -Math.PI / 2;
       rocket.x = sS.x; rocket.y = sS.y;
     }
+    // Start dort, wo die Rakete gerade steht (z. B. auf der Oberfläche), und sanft auf die Bahn einschwenken
+    rocket.offX = rocket.x - sS.x; rocket.offY = rocket.y - sS.y;
 
     // Kamera begleitet die Rakete: kurz aufholen, unterwegs etwas herauszoomen, am Ziel hineinzoomen
     state.follow = b;
@@ -851,6 +849,64 @@
     rocket.ang += wrapAngle(target - rocket.ang) * (1 - Math.exp(-dt * speed));
   }
 
+  // Landeanflug: über den Planeten schwenken, Nase hoch, abbremsen, aufsetzen
+  const APPROACH = 1.0, DESCEND = 1.5;
+  function landingStep(dt, P) {
+    const b = rocket.target;
+    const c = w2sp(posOf(b), P);
+    const R = Math.max(screenR(b), 3);
+    const surf = R + 15, hover = R + 65;
+    const UP = -Math.PI / 2;
+    rocket.phaseT += dt;
+    if (rocket.mode === 'approach') {
+      const t = clamp(rocket.phaseT / APPROACH, 0, 1), e = ease(t);
+      const da = wrapAngle(UP - rocket.orbitAng);
+      const at = r0 => rocket.orbitAng + da * r0;
+      const pr = parkRadius(b);
+      const pos = r0 => ({ x: c.x + Math.cos(at(r0)) * lerp(pr, hover, r0), y: c.y + Math.sin(at(r0)) * lerp(pr, hover, r0) });
+      const p = pos(e), q = pos(Math.min(1, e + 0.03));
+      const move = Math.atan2(q.y - p.y, q.x - p.x);
+      const k = clamp((t - 0.45) / 0.55, 0, 1);
+      turnTo(k > 0 ? move + wrapAngle(UP - move) * k : move, dt, 9);
+      rocket.x = p.x; rocket.y = p.y;
+      rocket.flame = 0.75;
+      puff(dt, 0.04, true);
+      if (t >= 1) { rocket.mode = 'descend'; rocket.phaseT = 0; }
+    } else if (rocket.mode === 'descend') {
+      const t = clamp(rocket.phaseT / DESCEND, 0, 1);
+      const e = 1 - Math.pow(1 - t, 3);          // wird immer langsamer
+      const r = lerp(hover, surf, e);
+      turnTo(UP, dt, 12);
+      rocket.x = c.x + Math.sin(state.time * 9) * (1 - t) * 1.5;
+      rocket.y = c.y - r;
+      rocket.flame = lerp(0.95, 0.35, t);
+      puff(dt, 0.05, true);
+      if (t >= 1) {
+        rocket.mode = 'landed';
+        rocket.flame = 0;
+        dust(c.x, c.y - R);
+        if (state.selected === b) openInfo(b);
+      }
+    } else {
+      rocket.x = c.x; rocket.y = c.y - surf;
+      rocket.ang = UP;
+      rocket.flame = 0;
+    }
+  }
+  function puff(dt, every, big) {
+    rocket.puffT -= dt;
+    if (rocket.puffT > 0) return;
+    const z = rocket.target ? (posOf(rocket.target).z || 0) : 0;
+    addSmoke(rocket.x - Math.cos(rocket.ang) * 16, rocket.y - Math.sin(rocket.ang) * 16, z, big);
+    rocket.puffT = every;
+  }
+  function dust(x, y) {
+    for (let i = 0; i < 22; i++) {
+      const dir = i % 2 ? 1 : -1, v = 30 + Math.random() * 70;
+      sparks.push({ x: x + dir * 4, y, vx: dir * v, vy: -Math.random() * 35, r: 1.5 + Math.random() * 2.5, life: 1, col: i % 3 ? '#c9c2b4' : '#ffffff' });
+    }
+  }
+
   function updateRocket(dt) {
     const P = proj();
     if (rocket.mode === 'fly') {
@@ -864,8 +920,9 @@
       const blend = clamp((tt - 0.7) / 0.3, 0, 1);
       const bl = blend * blend * (3 - 2 * blend);
       const pr = parkRadius(b);
-      const nx = s.x + Math.cos(rocket.a0) * pr * bl;
-      const ny = s.y + Math.sin(rocket.a0) * pr * bl;
+      const st = clamp(tt / 0.3, 0, 1), sk = 1 - st * st * (3 - 2 * st);
+      const nx = s.x + Math.cos(rocket.a0) * pr * bl + rocket.offX * sk;
+      const ny = s.y + Math.sin(rocket.a0) * pr * bl + rocket.offY * sk;
       // Richtung: wohin die Bahn gerade zeigt
       const ahead = w2sp(rocketWorld(Math.min(1, u + 0.02)), P);
       let want = Math.atan2(ahead.y - s.y, ahead.x - s.x);
@@ -881,12 +938,19 @@
         rocket.puffT = tt === 0 ? 0.06 : 0.025;
       }
       if (tt >= 1) {
-        rocket.mode = 'park';
         rocket.orbitAng = rocket.a0;
-        const c = w2sp(posOf(b), P);
-        sparkle(c.x, c.y);
-        if (state.selected === b) openInfo(b);
+        rocket.phaseT = 0;
+        if (canLand(b)) {
+          rocket.mode = 'approach';
+        } else {
+          rocket.mode = 'park';
+          const c = w2sp(posOf(b), P);
+          sparkle(c.x, c.y);
+          if (state.selected === b) openInfo(b);
+        }
       }
+    } else if (rocket.mode === 'approach' || rocket.mode === 'descend' || rocket.mode === 'landed') {
+      landingStep(dt, P);
     } else if (rocket.mode === 'park') {
       const b = rocket.target;
       rocket.orbitAng -= dt * 1.3;
@@ -948,6 +1012,15 @@
       ctx.beginPath(); ctx.moveTo(-L * 0.42, -5); ctx.lineTo(-L * 0.42 - fl, 0); ctx.lineTo(-L * 0.42, 5); ctx.fill();
       ctx.fillStyle = '#ffe066';
       ctx.beginPath(); ctx.moveTo(-L * 0.42, -2.8); ctx.lineTo(-L * 0.42 - fl * 0.6, 0); ctx.lineTo(-L * 0.42, 2.8); ctx.fill();
+    }
+    // Landebeine
+    if (rocket.mode === 'landed' || (rocket.mode === 'descend' && rocket.phaseT > 0.5)) {
+      ctx.strokeStyle = '#b9bfd6';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(-L * 0.28, -5); ctx.lineTo(-L * 0.54, -10);
+      ctx.moveTo(-L * 0.28, 5); ctx.lineTo(-L * 0.54, 10);
+      ctx.stroke();
     }
     // Flossen
     ctx.fillStyle = '#e8413c';
@@ -1111,7 +1184,7 @@
 
   function closeInfo() {
     stopSpeaking();
-    if (rocket.mode === 'fly' || rocket.mode === 'park') { rocket.mode = 'leave'; rocket.v = 120; }
+    if (rocket.mode === 'fly' || atTarget()) { rocket.mode = 'leave'; rocket.v = 120; }
     state.selected = null;
     document.body.classList.remove('info-open');
     $('info').setAttribute('aria-hidden', 'true');
@@ -1120,11 +1193,10 @@
 
   function select(b) {
     if (trans) return;
-    hideHint();
     if (b.enter) { goToView(b.enter); return; }
     stopSpeaking();
     state.selected = b;
-    if (rocket.mode === 'park' && rocket.target === b) {
+    if (atTarget() && rocket.target === b) {
       flyTo(b);
       openInfo(b);
     } else {
@@ -1256,22 +1328,22 @@
   playBtn.addEventListener('click', togglePause);
   $('tOrbits').addEventListener('change', e => { state.showOrbits = e.target.checked; });
   $('tNames').addEventListener('change', e => { state.showNames = e.target.checked; });
-  $('zoomIn').addEventListener('click', () => { hideHint(); const c = center(); zoomAt(c.x, c.y, 1.6); });
-  $('zoomOut').addEventListener('click', () => { hideHint(); const c = center(); zoomAt(c.x, c.y, 1 / 1.6); });
+  $('zoomIn').addEventListener('click', () => { const c = center(); zoomAt(c.x, c.y, 1.6); });
+  $('zoomOut').addEventListener('click', () => { const c = center(); zoomAt(c.x, c.y, 1 / 1.6); });
   const tiltBtn = $('tiltBtn');
   function setTiltMode(on) {
     state.tiltMode = on;
     tiltBtn.classList.toggle('active', on);
     canvas.classList.toggle('tilting', on);
   }
-  tiltBtn.addEventListener('click', () => { hideHint(); setTiltMode(!state.tiltMode); });
+  tiltBtn.addEventListener('click', () => { setTiltMode(!state.tiltMode); });
 
-  function showWholeView() { hideHint(); closeInfo(); flyHome(); }
+  function showWholeView() { closeInfo(); flyHome(); }
   $('homeBtn').addEventListener('click', showWholeView);
   $('closeInfo').addEventListener('click', showWholeView);
   $('backBtn').addEventListener('click', showWholeView);
 
-  for (const btn of document.querySelectorAll('.modes button')) btn.addEventListener('click', () => { hideHint(); goToView(btn.dataset.mode); });
+  for (const btn of document.querySelectorAll('.modes button')) btn.addEventListener('click', () => { goToView(btn.dataset.mode); });
 
   // Knopf, der zum Weiterzoomen in die nächste Ebene einlädt
   const levelHint = $('levelHint');
@@ -1294,9 +1366,6 @@
     levelHint.classList.toggle('show', !!text);
   }
 
-  const hint = $('hint');
-  function hideHint() { hint.classList.add('hidden'); }
-  $('hintBtn').addEventListener('click', hideHint);
 
   // ---------- Maus & Touch ----------
   const pointers = new Map();
@@ -1319,7 +1388,6 @@
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, rot: e.button === 2 || e.shiftKey || state.tiltMode });
     if (pointers.size === 1) dragMoved = false;
     if (pointers.size === 2) { pinchPrev = pinchInfo(); dragMoved = true; }
-    hideHint();
   });
 
   canvas.addEventListener('pointermove', e => {
@@ -1369,7 +1437,6 @@
 
   canvas.addEventListener('wheel', e => {
     e.preventDefault();
-    hideHint();
     const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
     zoomAt(e.clientX, e.clientY, Math.exp(-clamp(dy, -200, 200) * 0.0016));
   }, { passive: false });
@@ -1386,7 +1453,6 @@
     else if (e.key === 'ArrowUp') rotateBy(0, -12);
     else if (e.key === 'ArrowDown') rotateBy(0, 12);
     else return;
-    hideHint();
   });
 
   // ---------- Größe & Hauptschleife ----------
@@ -1419,6 +1485,10 @@
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
+    step(dt);
+    requestAnimationFrame(frame);
+  }
+  function step(dt) {
     state.time += dt;
     if (!state.paused && state.view === 'orbit') {
       const sp = SPEEDS[state.speedIdx];
@@ -1459,10 +1529,9 @@
     }
     hudTimer -= dt;
     if (hudTimer <= 0) { updateHud(); updateLevelHint(); hudTimer = 0.2; }
-    requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 
   // Für Tests in der Konsole
-  window.__solar = { state, cam, rot, select, goToView, flyHome, rocket, byId, w2s: (b) => w2sp(posOf(b)) };
+  window.__solar = { step, state, cam, rot, select, goToView, flyHome, rocket, byId, w2s: (b) => w2sp(posOf(b)) };
 })();

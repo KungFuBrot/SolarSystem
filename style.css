@@ -1,5 +1,5 @@
 :root {
-  --bg: #04050d;
+  --bg: #000;
   --card: rgba(18, 22, 48, 0.82);
   --card-border: rgba(140, 160, 255, 0.22);
   --text: #f2f4ff;
@@ -309,23 +309,6 @@ body.info-open .info { transform: none; }
 .fun p, .compare p { margin: 6px 0 0; font-size: 16px; line-height: 1.45; }
 #cmp { width: 100%; height: 130px; display: block; margin-top: 8px; }
 .info .back { display: block; width: 100%; margin-top: 16px; font-size: 18px; }
-
-/* ---------- Start-Tipp ---------- */
-.hint {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: min(460px, calc(100vw - 32px));
-  padding: 22px 24px;
-  text-align: center;
-  font-size: 18px;
-  line-height: 1.4;
-  transition: opacity 0.3s;
-}
-.hint p { margin: 0 0 10px; }
-.hint button { margin-top: 8px; }
-.hint.hidden { opacity: 0; pointer-events: none; }
 
 /* ---------- Kleine Bildschirme ---------- */
 @media (max-width: 900px) {
