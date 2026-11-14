@@ -22,7 +22,9 @@
     </div>
     <div class="modes" role="tablist">
       <button data-mode="orbit" class="active">🪐 Sonnensystem</button>
-      <button data-mode="size">📏 Echte Größen</button>
+      <button data-mode="size">📏 Größen</button>
+      <button data-mode="stars">⭐ Nachbarsterne</button>
+      <button data-mode="galaxy">🌌 Milchstraße</button>
     </div>
   </header>
 
@@ -44,10 +46,13 @@
   <div class="zoom-controls">
     <button id="zoomIn" class="round" title="Hineinzoomen">+</button>
     <button id="zoomOut" class="round" title="Herauszoomen">−</button>
-    <button id="homeBtn" class="round" title="Ganzes Sonnensystem zeigen">🔭</button>
+    <button id="tiltBtn" class="round" title="Kippen und Drehen: danach ziehen">🔄</button>
+    <button id="homeBtn" class="round" title="Alles zeigen und gerade ausrichten">🔭</button>
   </div>
 
   <p class="note" id="note"></p>
+
+  <button id="levelHint" class="level-hint"></button>
 
   <nav class="planet-bar" id="planetBar" aria-label="Planeten"></nav>
 
@@ -68,22 +73,25 @@
       <strong>⭐ Wusstest du?</strong>
       <p id="infoFun"></p>
     </div>
-    <div class="compare">
-      <strong>📐 So groß im Vergleich zur Erde</strong>
+    <div class="compare" id="compareBox">
+      <strong id="cmpTitle">📐 So groß im Vergleich zur Erde</strong>
       <canvas id="cmp"></canvas>
       <p id="infoCompare"></p>
     </div>
-    <button id="backBtn" class="pill big back">🔭 Zum ganzen Sonnensystem</button>
+    <button id="backBtn" class="pill big back">🔭 Zurück zur Übersicht</button>
   </aside>
 
   <div id="hint" class="hint card">
     <p>👆 <b>Klick</b> oder <b>tippe</b> auf einen Planeten: Deine 🚀 <b>Rakete</b> fliegt hin und bringt dir spannende Infos!</p>
     <p>🔍 <b>Zoomen:</b> Mausrad, zwei Finger oder die Knöpfe <b>+</b> und <b>−</b></p>
     <p>✋ <b>Verschieben:</b> mit gedrückter Maustaste oder einem Finger ziehen</p>
+    <p>🔄 <b>Kippen und Drehen:</b> Knopf 🔄 drücken und ziehen – oder mit der rechten Maustaste ziehen</p>
+    <p>🌌 Zoome ganz weit hinaus – bis zu den Sternen und in die Milchstraße!</p>
     <button id="hintBtn" class="pill big">Los geht's! 🚀</button>
   </div>
 
   <script src="js/data.js"></script>
+  <script src="js/space.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

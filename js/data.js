@@ -5,7 +5,7 @@
 window.BODIES = [
   {
     id: 'sonne', name: 'Sonne', kind: 'Stern', color: '#ffc93c',
-    r: 30, orbit: 0, period: 0, start: 0, sizeR: 109,
+    r: 30, orbit: 0, period: 0, start: 0, sizeR: 109, arrow: true,
     diameterKm: 1392700, distanceKm: 149600000, distanceFrom: 'Erde',
     yearLabel: null, year: null,
     day: 'ca. 25 Tage (so lange dreht sie sich einmal um sich selbst)',
@@ -119,3 +119,119 @@ window.BODIES = [
     compare: 'Neptun ist fast genauso groß wie Uranus – ungefähr viermal so breit wie die Erde.'
   }
 ];
+
+// ---------- Monde der anderen Planeten ----------
+// orbit/r = Darstellung um den Planeten, period = Erdtage (negativ = rückwärts)
+(function addMoons() {
+  const PLANET = {
+    mars: ['des Mars', 'zum Mars', 'um den Mars'],
+    jupiter: ['des Jupiters', 'zum Jupiter', 'um den Jupiter'],
+    saturn: ['des Saturns', 'zum Saturn', 'um den Saturn'],
+    uranus: ['des Uranus', 'zum Uranus', 'um den Uranus'],
+    neptun: ['des Neptuns', 'zum Neptun', 'um den Neptun']
+  };
+  const moon = m => {
+    const [gen, to, around] = PLANET[m.parent];
+    return Object.assign({
+      kind: 'Mond ' + gen, texture: 'craters', craterColor: 'rgba(0,0,0,0.25)',
+      craters: [[-0.3, -0.25, 0.2], [0.3, 0.2, 0.16], [0.05, -0.55, 0.12], [-0.4, 0.4, 0.1]],
+      distLabel: 'Entfernung ' + to, yearLabel: 'Eine Runde ' + around,
+      sizeR: m.diameterKm / 12742, bar: false, inSize: false, car: false, start: Math.random() * 6.28
+    }, m);
+  };
+  window.BODIES.push(
+    moon({
+      id: 'phobos', name: 'Phobos', parent: 'mars', color: '#8b7d6b', r: 0.6, orbit: 8.5, period: 0.319,
+      diameterKm: 22, distanceKm: 9376, year: '7 Stunden und 39 Minuten',
+      intro: 'Phobos ist der größere der beiden Mars-Monde. Er ist nicht rund, sondern sieht aus wie eine riesige Kartoffel.',
+      fun: 'Phobos kommt dem Mars jedes Jahr ein winziges Stückchen näher. In vielen Millionen Jahren wird er zerbrechen und vielleicht einen Ring um den Mars bilden!',
+      compare: 'Phobos ist winzig: Über 500 Phobos-Monde passen nebeneinander auf die Erde.'
+    }),
+    moon({
+      id: 'deimos', name: 'Deimos', parent: 'mars', color: '#a39582', r: 0.5, orbit: 11, period: 1.26,
+      diameterKm: 12, distanceKm: 23460, year: 'ca. 30 Stunden',
+      intro: 'Deimos ist der kleinere Mars-Mond – nur etwa 12 Kilometer groß. Auch er ist wie eine Kartoffel geformt.',
+      fun: 'Auf Deimos ist die Schwerkraft so schwach, dass du mit einem kräftigen Sprung fast ins Weltall hüpfen könntest!',
+      compare: 'Über 1.000 Deimos-Monde passen nebeneinander auf die Erde.'
+    }),
+    moon({
+      id: 'io', name: 'Io', parent: 'jupiter', color: '#e8d36a', r: 1.7, orbit: 24, period: 1.77,
+      craterColor: '#c2662a', craters: [[-0.3, -0.2, 0.16], [0.35, 0.15, 0.13], [0, 0.5, 0.11], [0.2, -0.5, 0.09], [-0.5, 0.3, 0.08]],
+      diameterKm: 3643, distanceKm: 421700, year: 'ca. 1 Tag und 18 Stunden',
+      intro: 'Io ist ein Mond des Jupiters und sieht aus wie eine Pizza – gelb, orange und mit dunklen Flecken.',
+      fun: 'Io hat über 400 aktive Vulkane – mehr als jeder andere Ort im Sonnensystem! Manche spucken ihre Lava hunderte Kilometer hoch.',
+      compare: 'Io ist ein kleines bisschen größer als unser Mond.'
+    }),
+    moon({
+      id: 'europa', name: 'Europa', parent: 'jupiter', color: '#e8dccb', r: 1.5, orbit: 28.5, period: 3.55,
+      texture: 'lines', diameterKm: 3122, distanceKm: 671000, year: 'ca. 3 ½ Tage',
+      intro: 'Europa ist von einer dicken Eisschicht bedeckt, die voller Risse ist – wie ein zerbrochenes Ei.',
+      fun: 'Unter dem Eis von Europa gibt es wahrscheinlich einen riesigen Ozean – mit mehr Wasser als auf der ganzen Erde! Forscher fragen sich, ob dort Leben sein könnte.',
+      compare: 'Europa ist etwas kleiner als unser Mond.'
+    }),
+    moon({
+      id: 'ganymed', name: 'Ganymed', parent: 'jupiter', color: '#a89c8c', r: 2.4, orbit: 34, period: 7.15,
+      diameterKm: 5268, distanceKm: 1070400, year: 'ca. 7 Tage',
+      intro: 'Ganymed ist der größte Mond im ganzen Sonnensystem. Er ist sogar größer als der Planet Merkur!',
+      fun: 'Ganymed ist der einzige Mond, der ein eigenes Magnetfeld hat – fast wie ein kleiner Planet.',
+      compare: 'Ganymed ist ungefähr zwei Fünftel so groß wie die Erde – und größer als Merkur.'
+    }),
+    moon({
+      id: 'kallisto', name: 'Kallisto', parent: 'jupiter', color: '#6e6458', r: 2.2, orbit: 41, period: 16.7,
+      craterColor: 'rgba(255,255,255,0.25)', diameterKm: 4821, distanceKm: 1882700, year: 'ca. 17 Tage',
+      intro: 'Kallisto ist ein dunkler, eisiger Mond des Jupiters. Seine Oberfläche ist über und über mit Kratern bedeckt.',
+      fun: 'Kallisto gehört zu den Himmelskörpern mit den meisten Kratern im ganzen Sonnensystem.',
+      compare: 'Kallisto ist fast genauso groß wie der Planet Merkur.'
+    }),
+    moon({
+      id: 'mimas', name: 'Mimas', parent: 'saturn', color: '#cfd0d4', r: 0.6, orbit: 37, period: 0.94,
+      craters: [[0.3, -0.1, 0.33]], diameterKm: 396, distanceKm: 185500, year: 'ca. 23 Stunden',
+      intro: 'Mimas ist ein kleiner, eisiger Mond des Saturns.',
+      fun: 'Mimas hat einen riesigen Krater, der fast ein Drittel so breit ist wie der ganze Mond. Dadurch sieht er aus wie ein großes Auge!',
+      compare: 'Mimas ist so klein, dass er locker in Deutschland hineinpassen würde.'
+    }),
+    moon({
+      id: 'enceladus', name: 'Enceladus', parent: 'saturn', color: '#f4f6fa', r: 0.7, orbit: 42, period: 1.37,
+      craterColor: 'rgba(120,170,220,0.35)', diameterKm: 504, distanceKm: 238000, year: 'ca. 1 Tag und 9 Stunden',
+      intro: 'Enceladus ist ein kleiner Saturnmond, der strahlend weiß leuchtet – er ist mit frischem Eis bedeckt.',
+      fun: 'Aus Enceladus schießen riesige Wasserfontänen ins Weltall, wie Geysire! Darunter liegt ein Ozean.',
+      compare: 'Über 25 Enceladus-Monde passen nebeneinander auf die Erde.'
+    }),
+    moon({
+      id: 'titan', name: 'Titan', parent: 'saturn', color: '#d9a24a', r: 2.3, orbit: 54, period: 15.9,
+      texture: 'bands', bands: [[-0.6, 0.25, 'rgba(255,220,150,0.35)'], [0.1, 0.3, 'rgba(160,100,30,0.25)']],
+      atmo: 'rgba(255,190,100,0.55)', diameterKm: 5150, distanceKm: 1221870, year: 'ca. 16 Tage', temp: 'ca. −180 °C',
+      intro: 'Titan ist der größte Mond des Saturns. Er ist in eine dicke, orange Lufthülle eingehüllt – fast wie in Nebel.',
+      fun: 'Auf Titan gibt es Seen und Flüsse – aber nicht aus Wasser, sondern aus flüssigem Gas, weil es dort so kalt ist!',
+      compare: 'Titan ist sogar größer als der Planet Merkur!'
+    }),
+    moon({
+      id: 'miranda', name: 'Miranda', parent: 'uranus', color: '#b7b4ae', r: 0.7, orbit: 15, period: 1.41,
+      diameterKm: 472, distanceKm: 129900, year: 'ca. 1 Tag und 10 Stunden',
+      intro: 'Miranda ist ein kleiner Mond des Uranus und sieht aus, als wäre er aus verschiedenen Stücken zusammengeflickt.',
+      fun: 'Auf Miranda gibt es eine der höchsten Klippen im Sonnensystem – etwa 20 Kilometer tief! Wegen der schwachen Schwerkraft würdest du beim Hinunterspringen mehrere Minuten lang fallen.',
+      compare: 'Über 25 Miranda-Monde passen nebeneinander auf die Erde.'
+    }),
+    moon({
+      id: 'titania', name: 'Titania', parent: 'uranus', color: '#a9a39b', r: 1.2, orbit: 20, period: 8.7,
+      diameterKm: 1578, distanceKm: 436300, year: 'ca. 9 Tage',
+      intro: 'Titania ist der größte Mond des Uranus. Er ist grau, eisig und hat tiefe Schluchten.',
+      fun: 'Die Uranus-Monde sind nach Figuren aus Theaterstücken von William Shakespeare benannt. Titania ist dort die Feenkönigin!',
+      compare: 'Titania ist knapp halb so groß wie unser Mond.'
+    }),
+    moon({
+      id: 'oberon', name: 'Oberon', parent: 'uranus', color: '#9c8f86', r: 1.2, orbit: 24, period: 13.5,
+      diameterKm: 1523, distanceKm: 583500, year: 'ca. 13 ½ Tage',
+      intro: 'Oberon ist der äußerste große Mond des Uranus und voller Krater.',
+      fun: 'In Shakespeares Theaterstück ist Oberon der Feenkönig – der Mann von Titania! Die beiden kreisen als Nachbarn um Uranus.',
+      compare: 'Oberon ist fast genauso groß wie Titania.'
+    }),
+    moon({
+      id: 'triton', name: 'Triton', parent: 'neptun', color: '#d9c3b8', r: 1.5, orbit: 17, period: -5.88,
+      craterColor: 'rgba(160,110,100,0.35)', diameterKm: 2707, distanceKm: 354760, year: 'ca. 6 Tage – rückwärts!', temp: 'ca. −235 °C',
+      intro: 'Triton ist der größte Mond des Neptuns. Er gehört zu den kältesten Orten im ganzen Sonnensystem.',
+      fun: 'Triton kreist rückwärts um Neptun – andersherum, als Neptun sich dreht! Wahrscheinlich war er früher ein Zwergplanet, den Neptun eingefangen hat.',
+      compare: 'Triton ist ein bisschen kleiner als unser Mond.'
+    })
+  );
+})();
