@@ -29,7 +29,12 @@
   </header>
 
   <section class="card time-panel" id="timePanel">
-    <div class="date"><span aria-hidden="true">📅</span> <span id="dateText"></span></div>
+    <div class="date">
+      <button id="dateBtn" class="date-btn" title="Datum auswählen">
+        <span aria-hidden="true">📅</span> <span id="dateText"></span> <span class="edit" aria-hidden="true">✏️</span>
+      </button>
+      <input type="date" id="datePick" min="1000-01-01" max="3000-12-31" aria-label="Datum auswählen">
+    </div>
     <div class="rel"><span id="relText"></span> <span id="liveBadge" class="live">● Echtzeit</span></div>
     <div class="tbtns">
       <button id="rewBtn" class="round" title="Zurückspulen (nochmal drücken: schneller)">⏪</button>

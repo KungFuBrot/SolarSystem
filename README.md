@@ -25,6 +25,7 @@ Online über den Link oben, oder lokal einfach `index.html` im Browser öffnen (
 - **Zoomen** mit Mausrad, zwei Fingern (Touch) oder den Knöpfen `+` / `−`
 - **Verschieben** durch Ziehen mit Maus oder Finger
 - **Echte Zeit**: Alle Planeten, der Mond (mit der richtigen Mondphase), Ceres, Pluto und der Halleysche Komet stehen dort, wo sie zum angezeigten Datum wirklich sind (Bahndaten nach NASA/JPL). Die Abstände bleiben vereinfacht, die Richtungen stimmen.
+- **📅 Datum auswählen**: Auf das Datum tippen öffnet einen Kalender (Jahr 1000 bis 3000) – die Planeten springen an ihre Stellung an diesem Tag, z. B. zur Mondlandung am 20. Juli 1969. Voyager 1 und die ISS erscheinen erst ab ihrem Start.
 - **Zeitsteuerung**: ⏪ zurückspulen, ⏸️ anhalten, ⏩ vorspulen (nochmal drücken = schneller), 🐢 … 🚀 Tempo von Echtzeit bis 1 Jahr pro Sekunde, **🕐 Jetzt** springt zum aktuellen Zeitpunkt und läuft in Echtzeit weiter. Beim Start läuft die Zeit in Echtzeit (wie nach „Jetzt“)
 - **📏 Größen** → alle Planeten in echtem Größenverhältnis neben der riesigen Sonne
 

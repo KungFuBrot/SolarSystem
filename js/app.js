@@ -253,6 +253,7 @@
     return !!s && (s === b || s === b.parentBody || s.parentBody === b.parentBody);
   }
   function isVisible(b) {
+    if (b.since && state.jd < b.since) return false;  // gab es damals noch nicht
     if (state.view === 'orbit' && b.parentBody) {
       if (!moonActive(b)) return false;
       const o = moonOrbitPx(b);
@@ -1491,6 +1492,7 @@
   function select(b) {
     if (trans) return;
     if (b.enter) { goToView(b.enter); return; }
+    if (b.since && state.jd < b.since) return;
     stopSpeaking();
     state.selected = b;
     if (atTarget() && rocket.target === b) {
@@ -1651,6 +1653,25 @@
     syncTimeUi();
   });
   // Zurück zum jetzigen Zeitpunkt, in Echtzeit
+  // Datum im Kalender auswählen: die Planeten springen an ihre Stellung an diesem Tag
+  const datePick = $('datePick');
+  const pad = n => String(n).padStart(2, '0');
+  $('dateBtn').addEventListener('click', () => {
+    const d = jdToDate(state.jd);
+    datePick.value = `${String(d.getFullYear()).padStart(4, '0')}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    try { datePick.showPicker(); } catch (e) { datePick.focus(); datePick.click(); }
+  });
+  datePick.addEventListener('change', () => {
+    const m = /^(\d{4,})-(\d{2})-(\d{2})$/.exec(datePick.value);
+    if (!m) return;
+    // Uhrzeit beibehalten, nur der Tag wechselt
+    const d = jdToDate(state.jd);
+    d.setFullYear(+m[1], +m[2] - 1, +m[3]);
+    state.jd = clamp(d.getTime() / 86400000 + 2440587.5, JD_MIN, JD_MAX);
+    state.moonAng = moonLonReal(state.jd);
+    syncTimeUi();
+  });
+
   $('nowBtn').addEventListener('click', () => {
     Object.assign(state, { jd: nowJD(), speedIdx: 0, dir: 1, paused: false });
     state.moonAng = moonLonReal(state.jd);

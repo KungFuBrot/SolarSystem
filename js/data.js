@@ -179,7 +179,7 @@ window.BODIES = [
     },
     {
       id: 'voyager', name: 'Voyager 1', kind: 'Raumsonde – am weitesten weg von allem, was Menschen gebaut haben', color: '#e8d9a8',
-      r: 1.5, fixed: { x: -146, y: 546, z: 396 }, probe: true, noLand: true, inSize: false,
+      r: 1.5, fixed: { x: -146, y: 546, z: 396 }, probe: true, noLand: true, inSize: false, since: 2443391.5, // Start am 5.9.1977
       rows: [
         ['🚀', 'Gestartet', '1977 – vor fast 50 Jahren'],
         ['📍', 'Entfernung zur Sonne', 'über 25 Milliarden km'],
@@ -194,7 +194,7 @@ window.BODIES = [
   window.BODIES.push(
     moon({
       id: 'iss', name: 'ISS', parent: 'erde', kind: 'Internationale Raumstation', color: '#d7dbe6',
-      r: 0.45, orbit: 11, period: 0.064, station: true, bar: true, texture: null,
+      r: 0.45, orbit: 11, period: 0.064, station: true, bar: true, texture: null, since: 2451137.5, // erstes Modul am 20.11.1998
       rows: [
         ['📏', 'Größe', 'ca. 109 m breit – so groß wie ein Fußballfeld'],
         ['📍', 'Höhe über der Erde', 'ca. 400 km'],
